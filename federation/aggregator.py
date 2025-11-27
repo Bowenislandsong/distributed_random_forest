@@ -150,7 +150,8 @@ def aggregate_trees(
     }
 
     if strategy not in strategy_map:
-        raise ValueError(f"Unknown strategy: {strategy}. Must be one of {list(strategy_map.keys())}")
+        valid_strategies = ', '.join(strategy_map.keys())
+        raise ValueError(f"Unknown strategy: {strategy}. Must be one of: {valid_strategies}")
 
     if strategy in ['rf_s_dts_a', 'rf_s_dts_wa']:
         if n_trees_per_client is None:

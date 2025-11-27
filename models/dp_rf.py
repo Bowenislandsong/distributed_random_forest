@@ -158,7 +158,10 @@ class DPRandomForest(RandomForest):
                     scale = sensitivity / max(epsilon, 1e-10)
                     noise = rng.laplace(0, scale, size=class_counts.shape)
                 else:
-                    sigma = sensitivity * np.sqrt(2 * np.log(1.25 / 0.001)) / max(epsilon, 1e-10)
+                    # Gaussian mechanism with (epsilon, delta)-DP
+                    # Using delta=0.001 as default, formula from Dwork & Roth (2014)
+                    delta = 0.001
+                    sigma = sensitivity * np.sqrt(2 * np.log(1.25 / delta)) / max(epsilon, 1e-10)
                     noise = rng.normal(0, sigma, size=class_counts.shape)
 
                 noisy_counts = np.maximum(class_counts + noise, 0)

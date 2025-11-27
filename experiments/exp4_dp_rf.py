@@ -88,7 +88,8 @@ def run_exp4_dp_federation(
                     random_state=random_state,
                     stratify=y_client if len(np.unique(y_client)) > 1 else None,
                 )
-            except ValueError:
+            except ValueError as e:
+                # Fallback if stratified split fails (e.g., too few samples per class)
                 X_tr, y_tr = X_client, y_client
                 X_val_client, y_val_client = X_val, y_val
 
