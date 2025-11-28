@@ -163,6 +163,8 @@ Pipeline:
 
 ## 6. Getting Started
 
+### Installation
+
 ```bash
 git clone <your-repo>
 cd distributed_random_forrest
@@ -172,15 +174,122 @@ pip install -r requirements.txt
 ### Run Experiments
 
 ```bash
-python run_exp1_hparams.py
-python run_exp2_clients.py
-python run_exp3_federation.py
-python run_exp4_dp_federation.py
+python run_exp1_hparams.py    # Hyperparameter selection
+python run_exp2_clients.py    # Independent client training
+python run_exp3_federation.py # Federated aggregation
+python run_exp4_dp_federation.py # DP federation
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage
+pytest tests/ --cov=models --cov=federation --cov=experiments
+
+# Run specific test suites
+pytest tests/test_tree_utils.py -v      # Unit tests for utilities
+pytest tests/test_random_forest.py -v   # Unit tests for RF
+pytest tests/test_dp_rf.py -v           # Unit tests for DP-RF
+pytest tests/test_aggregator.py -v      # Unit tests for aggregation
+pytest tests/test_e2e.py -v             # End-to-end tests
 ```
 
 ---
 
-## 7. Repository Structure
+## 7. Usage Examples
+
+### Basic Random Forest Training
+
+```python
+from models.random_forest import RandomForest
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
+# Create sample data
+X, y = make_classification(n_samples=1000, n_features=20, n_classes=3, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train RF with Gini criterion and simple voting
+rf = RandomForest(n_estimators=100, criterion='gini', voting='simple', random_state=42)
+rf.fit(X_train, y_train)
+
+# Evaluate
+accuracy = rf.score(X_test, y_test)
+print(f"Accuracy: {accuracy:.4f}")
+```
+
+### Federated Learning with Multiple Clients
+
+```python
+from models.random_forest import ClientRF
+from federation.aggregator import FederatedAggregator
+from experiments.exp2_clients import partition_uniform_random
+
+# Partition data for 5 clients
+partitions = partition_uniform_random(X_train, y_train, n_clients=5, random_state=42)
+
+# Train RF on each client
+clients = []
+for i, (X_client, y_client) in enumerate(partitions):
+    client = ClientRF(client_id=i, rf_params={'n_estimators': 20, 'random_state': i})
+    client.train(X_client, y_client)
+    clients.append(client)
+
+# Aggregate trees using RF_S_DTs_A strategy
+aggregator = FederatedAggregator(strategy='rf_s_dts_a', n_trees_per_client=10)
+aggregator.aggregate(clients, X_val, y_val)
+
+# Build and evaluate global RF
+global_rf = aggregator.build_global_rf(clients[0].rf._classes)
+metrics = aggregator.evaluate(X_test, y_test)
+print(f"Global RF Accuracy: {metrics['accuracy']:.4f}")
+```
+
+### Differential Privacy Training
+
+```python
+from models.dp_rf import DPRandomForest, DPClientRF
+
+# Train DP-RF with epsilon=1.0 (Laplace mechanism)
+dp_rf = DPRandomForest(
+    n_estimators=50,
+    epsilon=1.0,
+    dp_mechanism='laplace',
+    random_state=42
+)
+dp_rf.fit(X_train, y_train)
+print(f"Privacy budget: ε={dp_rf.get_privacy_budget()}")
+
+# DP client for federated learning
+dp_client = DPClientRF(client_id=0, epsilon=0.5, rf_params={'n_estimators': 20})
+dp_client.train(X_client, y_client)
+```
+
+### Comparing Aggregation Strategies
+
+```python
+from experiments.exp3_global_rf import run_exp3_federated_aggregation
+
+results = run_exp3_federated_aggregation(
+    client_rfs=clients,
+    X_val=X_val,
+    y_val=y_val,
+    X_test=X_test,
+    y_test=y_test,
+    n_trees_per_client=10,
+    verbose=True
+)
+
+print(f"Best strategy: {results['best_strategy']}")
+print(f"Best accuracy: {results['best_accuracy']:.4f}")
+```
+
+---
+
+## 8. Repository Structure
 
 ```
 distributed_random_forrest/
@@ -189,17 +298,25 @@ distributed_random_forrest/
 ├── models/
 │   ├── random_forest.py      # Core RF implementation
 │   ├── dp_rf.py              # Differentially private RF
-│   └── tree_utils.py
+│   └── tree_utils.py         # Utility functions for metrics
 ├── federation/
 │   ├── aggregator.py         # DT aggregation strategies (A, WA, All)
 │   └── voting.py             # SV, WV methods
-│
 ├── experiments/
-│   ├── exp1_hparams.py
-│   ├── exp2_clients.py
-│   ├── exp3_global_rf.py
-│   └── exp4_dp_rf.py
-│
+│   ├── exp1_hparams.py       # Hyperparameter selection
+│   ├── exp2_clients.py       # Independent client training
+│   ├── exp3_global_rf.py     # Federated aggregation
+│   └── exp4_dp_rf.py         # DP federation
+├── tests/
+│   ├── test_tree_utils.py    # Unit tests for utilities
+│   ├── test_random_forest.py # Unit tests for RF
+│   ├── test_dp_rf.py         # Unit tests for DP-RF
+│   ├── test_voting.py        # Unit tests for voting
+│   ├── test_aggregator.py    # Unit tests for aggregation
+│   └── test_e2e.py           # End-to-end tests
+├── .github/workflows/
+│   └── tests.yml             # CI/CD workflow
+├── requirements.txt          # Python dependencies
 └── README.md                 # You are here
 ```
 
