@@ -23,20 +23,22 @@ def _map_tree_predictions(y_pred, tree_classes, target_classes):
     tree_classes = np.asarray(tree_classes)
     target_classes = np.asarray(target_classes)
 
-    # Check if mapping is needed (tree uses different class representation)
-    if len(tree_classes) != len(target_classes):
+    # No mapping needed if classes have same representation
+    if np.array_equal(tree_classes, target_classes):
         return y_pred
 
     # Check if tree classes are numeric indices that need mapping
     # This happens when RF is trained with non-numeric labels
-    try:
-        # If tree_classes are floats like [0., 1., 2.] and target_classes are strings
-        if tree_classes.dtype != target_classes.dtype:
-            # Map predictions using index lookup
+    # Tree classes will be floats like [0., 1., 2.] while target_classes are strings
+    if (tree_classes.dtype != target_classes.dtype and
+            len(tree_classes) == len(target_classes)):
+        # Verify tree_classes are sequential indices starting from 0
+        expected_indices = np.arange(len(tree_classes), dtype=float)
+        if np.allclose(tree_classes, expected_indices):
+            # Map predictions using index lookup with bounds checking
             indices = y_pred.astype(int)
-            return target_classes[indices]
-    except (ValueError, IndexError, TypeError):
-        pass
+            if np.all((indices >= 0) & (indices < len(target_classes))):
+                return target_classes[indices]
 
     return y_pred
 
