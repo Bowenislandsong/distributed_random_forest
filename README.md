@@ -1,6 +1,10 @@
 # Distributed Random Forest with Differential Privacy
 
-### Enhancement Report & README
+[![PyPI version](https://img.shields.io/pypi/v/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python Versions](https://img.shields.io/pypi/pyversions/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
+[![Tests](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/tests.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/tests.yml)
 
 This repository implements a **Distributed / Federated Random Forest (RF)** framework inspired by:
 
@@ -336,6 +340,28 @@ distributed_random_forrest/
 
 ---
 
+## How to Cite
+
+If you use this project in your research, please cite it as:
+
+### BibTeX
+
+```bibtex
+@software{distributed_random_forrest,
+  author = {Bowenislandsong},
+  title = {Distributed Random Forest with Differential Privacy},
+  year = {2024},
+  publisher = {GitHub},
+  url = {https://github.com/Bowenislandsong/distributed_random_forrest}
+}
+```
+
+### APA
+
+Bowenislandsong. (2024). *Distributed Random Forest with Differential Privacy* [Computer software]. GitHub. https://github.com/Bowenislandsong/distributed_random_forrest
+
+---
+
 ## License
 
-This project is provided as-is for educational and research purposes.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
