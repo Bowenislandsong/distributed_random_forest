@@ -4,7 +4,11 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.models.tree_utils import (
+    compute_accuracy,
+    compute_weighted_accuracy,
+    _map_tree_predictions,
+)
 
 
 class RandomForest:
@@ -94,6 +98,9 @@ class RandomForest:
         weights = []
         for tree in self._trees:
             y_pred = tree.predict(X_val)
+            # Map tree predictions to original class labels if needed
+            if self._classes is not None and hasattr(tree, 'classes_'):
+                y_pred = _map_tree_predictions(y_pred, tree.classes_, self._classes)
             wa = compute_weighted_accuracy(y_val, y_pred, self._classes)
             weights.append(max(wa, 1e-6))
 
@@ -123,7 +130,15 @@ class RandomForest:
         Returns:
             ndarray: Predicted labels via majority vote.
         """
-        predictions = np.array([tree.predict(X) for tree in self._trees])
+        all_preds = []
+        for tree in self._trees:
+            preds = tree.predict(X)
+            # Map tree predictions to original class labels if needed
+            if self._classes is not None and hasattr(tree, 'classes_'):
+                preds = _map_tree_predictions(preds, tree.classes_, self._classes)
+            all_preds.append(preds)
+
+        predictions = np.array(all_preds)
         result = []
         for i in range(X.shape[0]):
             sample_preds = predictions[:, i]
@@ -145,6 +160,9 @@ class RandomForest:
 
         for tree_idx, tree in enumerate(self._trees):
             preds = tree.predict(X)
+            # Map tree predictions to original class labels if needed
+            if self._classes is not None and hasattr(tree, 'classes_'):
+                preds = _map_tree_predictions(preds, tree.classes_, self._classes)
             weight = self._tree_weights[tree_idx]
             for sample_idx, pred in enumerate(preds):
                 class_idx = np.where(self._classes == pred)[0][0]

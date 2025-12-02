@@ -56,22 +56,29 @@ def weighted_voting(predictions, weights, classes):
     return classes[np.argmax(class_votes, axis=1)]
 
 
-def compute_tree_weights_from_accuracy(trees, X_val, y_val):
+def compute_tree_weights_from_accuracy(trees, X_val, y_val, classes=None):
     """Compute weights for trees based on validation accuracy.
 
     Args:
         trees: List of fitted decision tree estimators.
         X_val: Validation features.
         y_val: Validation labels.
+        classes: Optional array of class labels for mapping tree predictions.
 
     Returns:
         ndarray: Normalized weights for each tree.
     """
-    from distributed_random_forest.models.tree_utils import compute_accuracy
+    from distributed_random_forest.models.tree_utils import (
+        compute_accuracy,
+        _map_tree_predictions,
+    )
 
     weights = []
     for tree in trees:
         y_pred = tree.predict(X_val)
+        # Map tree predictions to target classes if needed
+        if classes is not None and hasattr(tree, 'classes_'):
+            y_pred = _map_tree_predictions(y_pred, tree.classes_, classes)
         acc = compute_accuracy(y_val, y_pred)
         weights.append(max(acc, 1e-6))
 
@@ -86,16 +93,22 @@ def compute_tree_weights_from_weighted_accuracy(trees, X_val, y_val, classes=Non
         trees: List of fitted decision tree estimators.
         X_val: Validation features.
         y_val: Validation labels.
-        classes: Optional array of class labels.
+        classes: Optional array of class labels for mapping tree predictions.
 
     Returns:
         ndarray: Normalized weights for each tree.
     """
-    from distributed_random_forest.models.tree_utils import compute_weighted_accuracy
+    from distributed_random_forest.models.tree_utils import (
+        compute_weighted_accuracy,
+        _map_tree_predictions,
+    )
 
     weights = []
     for tree in trees:
         y_pred = tree.predict(X_val)
+        # Map tree predictions to target classes if needed
+        if classes is not None and hasattr(tree, 'classes_'):
+            y_pred = _map_tree_predictions(y_pred, tree.classes_, classes)
         wa = compute_weighted_accuracy(y_val, y_pred, classes)
         weights.append(max(wa, 1e-6))
 
