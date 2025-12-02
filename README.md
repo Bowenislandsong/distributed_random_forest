@@ -85,6 +85,16 @@ Grid search over:
 * Splitting rule (gini, entropy)
 * Ensemble rule (SV, WV)
 
+#### Hyperparameter Grid
+
+| Hyperparameter | Values | Count |
+|----------------|--------|-------|
+| Number of trees (`n_estimators`) | 1, 3, 5, 7, ..., 99 | 50 |
+| Splitting rule (`criterion`) | gini, entropy | 2 |
+| Ensemble rule (`voting`) | simple (SV), weighted (WV) | 2 |
+
+**Total configurations:** 50 × 2 × 2 = **200**
+
 The best configuration is used for all remaining experiments.
 
 ---
