@@ -7,7 +7,7 @@ name = "distributed-random-forest"
 version = "0.1.0"
 description = "Distributed/Federated Random Forest framework with Differential Privacy support"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 requires-python = ">=3.8"
 authors = [
     {name = "Bowenislandsong"}
