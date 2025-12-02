@@ -165,10 +165,24 @@ Pipeline:
 
 ### Installation
 
+#### Install from PyPI (coming soon)
+
 ```bash
-git clone <your-repo>
+pip install distributed-random-forest
+```
+
+#### Install from source (development mode)
+
+```bash
+git clone https://github.com/Bowenislandsong/distributed_random_forrest
 cd distributed_random_forrest
-pip install -r requirements.txt
+pip install -e .
+```
+
+For development with test dependencies:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 ### Run Experiments
