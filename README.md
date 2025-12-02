@@ -1,10 +1,10 @@
 # Distributed Random Forest with Differential Privacy
 
-[![PyPI version](https://img.shields.io/pypi/v/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
+[![PyPI version](https://img.shields.io/pypi/v/distributed_random_forest)](https://pypi.org/project/distributed_random_forest/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/distributed_random_forest)](https://pypi.org/project/distributed_random_forest/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python Versions](https://img.shields.io/pypi/pyversions/distributed_random_forrest)](https://pypi.org/project/distributed_random_forrest/)
-[![Tests](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/tests.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/tests.yml)
+[![Python Versions](https://img.shields.io/pypi/pyversions/distributed_random_forest)](https://pypi.org/project/distributed_random_forest/)
+[![Tests](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/tests.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/tests.yml)
 
 This repository implements a **Distributed / Federated Random Forest (RF)** framework inspired by:
 
@@ -178,8 +178,8 @@ pip install distributed-random-forest
 #### Install from source (development mode)
 
 ```bash
-git clone https://github.com/Bowenislandsong/distributed_random_forrest
-cd distributed_random_forrest
+git clone https://github.com/Bowenislandsong/distributed_random_forest
+cd distributed_random_forest
 pip install -e .
 ```
 
@@ -310,7 +310,7 @@ print(f"Best accuracy: {results['best_accuracy']:.4f}")
 ## 8. Repository Structure
 
 ```
-distributed_random_forrest/
+distributed_random_forest/
 │
 ├── data/                     # Raw and processed datasets
 ├── models/
@@ -347,18 +347,18 @@ If you use this project in your research, please cite it as:
 ### BibTeX
 
 ```bibtex
-@software{distributed_random_forrest,
+@software{distributed_random_forest,
   author = {Bowenislandsong},
   title = {Distributed Random Forest with Differential Privacy},
   year = {2024},
   publisher = {GitHub},
-  url = {https://github.com/Bowenislandsong/distributed_random_forrest}
+  url = {https://github.com/Bowenislandsong/distributed_random_forest}
 }
 ```
 
 ### APA
 
-Bowenislandsong. (2024). *Distributed Random Forest with Differential Privacy* [Computer software]. GitHub. https://github.com/Bowenislandsong/distributed_random_forrest
+Bowenislandsong. (2024). *Distributed Random Forest with Differential Privacy* [Computer software]. GitHub. https://github.com/Bowenislandsong/distributed_random_forest
 
 ---
 

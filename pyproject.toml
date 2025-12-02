@@ -7,7 +7,7 @@ name = "distributed-random-forest"
 version = "0.1.0"
 description = "Distributed/Federated Random Forest framework with Differential Privacy support"
 readme = "README.md"
-license = "Apache-2.0"
+license = { file = "LICENSE" }
 requires-python = ">=3.8"
 authors = [
     {name = "Bowenislandsong"}
@@ -23,6 +23,7 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -52,6 +53,9 @@ Issues = "https://github.com/Bowenislandsong/distributed_random_forrest/issues"
 
 [tool.setuptools.packages.find]
 include = ["models*", "federation*", "experiments*", "data*"]
+
+[tool.setuptools]
+license-files = ["LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
