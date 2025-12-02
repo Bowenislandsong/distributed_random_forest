@@ -4,11 +4,9 @@ import numpy as np
 import pytest
 from sklearn.datasets import make_classification
 
-import sys
-sys.path.insert(0, '.')
-
-from models.random_forest import RandomForest, ClientRF
-from federation.aggregator import (
+from distributed_random_forest import (
+    RandomForest,
+    ClientRF,
     rf_s_dts_a,
     rf_s_dts_wa,
     rf_s_dts_a_all,

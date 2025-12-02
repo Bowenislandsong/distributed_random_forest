@@ -3,8 +3,8 @@
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 
-from models.random_forest import RandomForest
-from models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.models.random_forest import RandomForest
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 
 
 class DPRandomForest(RandomForest):

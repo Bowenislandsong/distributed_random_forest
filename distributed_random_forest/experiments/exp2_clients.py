@@ -11,8 +11,8 @@ Three data-partitioning strategies:
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from models.random_forest import ClientRF
-from models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.models.random_forest import ClientRF
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 
 
 def partition_by_feature(X, y, feature_idx, n_partitions=None):

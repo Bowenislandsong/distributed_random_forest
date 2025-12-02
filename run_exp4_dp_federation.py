@@ -4,17 +4,15 @@
 Train DP-RF on each client and evaluate privacy-utility tradeoff.
 """
 
-import sys
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
-sys.path.insert(0, '.')
-
-from experiments.exp1_hparams import get_default_best_params
-from experiments.exp2_clients import partition_uniform_random
-from experiments.exp3_global_rf import run_exp3_federated_aggregation
-from experiments.exp4_dp_rf import (
+from distributed_random_forest import ClientRF
+from distributed_random_forest.experiments.exp1_hparams import get_default_best_params
+from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
+from distributed_random_forest.experiments.exp3_global_rf import run_exp3_federated_aggregation
+from distributed_random_forest.experiments.exp4_dp_rf import (
     run_exp4_dp_federation,
     compare_dp_vs_non_dp,
     get_dp_degradation_curve,
@@ -58,7 +56,6 @@ def main():
     partitions = partition_uniform_random(X_train, y_train, n_clients, random_state=42)
 
     print("\nTraining non-DP federated RF for comparison...")
-    from models.random_forest import ClientRF
     non_dp_clients = []
     for i, (X_p, y_p) in enumerate(partitions):
         client = ClientRF(client_id=i, rf_params=rf_params)

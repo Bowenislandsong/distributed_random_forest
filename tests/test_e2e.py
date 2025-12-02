@@ -5,19 +5,21 @@ import pytest
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
-import sys
-sys.path.insert(0, '.')
-
-from models.random_forest import RandomForest, ClientRF
-from models.dp_rf import DPRandomForest, DPClientRF
-from federation.aggregator import FederatedAggregator, aggregate_trees
-from experiments.exp1_hparams import quick_hyperparameter_selection, get_default_best_params
-from experiments.exp2_clients import (
+from distributed_random_forest import (
+    RandomForest,
+    ClientRF,
+    DPRandomForest,
+    DPClientRF,
+    FederatedAggregator,
+    aggregate_trees,
+)
+from distributed_random_forest.experiments.exp1_hparams import quick_hyperparameter_selection, get_default_best_params
+from distributed_random_forest.experiments.exp2_clients import (
     partition_uniform_random,
     run_exp2_independent_clients,
 )
-from experiments.exp3_global_rf import run_exp3_federated_aggregation
-from experiments.exp4_dp_rf import run_exp4_dp_federation
+from distributed_random_forest.experiments.exp3_global_rf import run_exp3_federated_aggregation
+from distributed_random_forest.experiments.exp4_dp_rf import run_exp4_dp_federation
 
 
 class TestEndToEndPipeline:

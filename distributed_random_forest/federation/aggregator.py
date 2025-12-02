@@ -1,7 +1,7 @@
 """Aggregation strategies for federated Random Forest."""
 
 import numpy as np
-from models.tree_utils import evaluate_tree, rank_trees_by_metric
+from distributed_random_forest.models.tree_utils import evaluate_tree, rank_trees_by_metric
 
 
 def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
@@ -224,7 +224,7 @@ class FederatedAggregator:
         Returns:
             RandomForest: Global RF instance.
         """
-        from models.random_forest import RandomForest
+        from distributed_random_forest.models.random_forest import RandomForest
 
         self.global_rf = RandomForest(voting=voting)
         self.global_rf.set_trees(self.global_trees, classes)
@@ -243,7 +243,7 @@ class FederatedAggregator:
         if self.global_rf is None:
             raise RuntimeError("Global RF not built")
 
-        from models.tree_utils import compute_accuracy, compute_weighted_accuracy
+        from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 
         y_pred = self.global_rf.predict(X_test)
         return {

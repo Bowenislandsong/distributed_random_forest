@@ -9,9 +9,9 @@ Independent client RFs are merged using 4 strategies:
 
 import numpy as np
 
-from models.random_forest import RandomForest
-from models.tree_utils import compute_accuracy, compute_weighted_accuracy
-from federation.aggregator import (
+from distributed_random_forest.models.random_forest import RandomForest
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.federation.aggregator import (
     aggregate_trees,
     FederatedAggregator,
     rf_s_dts_a,

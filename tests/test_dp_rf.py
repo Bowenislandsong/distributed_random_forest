@@ -4,10 +4,7 @@ import numpy as np
 import pytest
 from sklearn.datasets import make_classification
 
-import sys
-sys.path.insert(0, '.')
-
-from models.dp_rf import DPRandomForest, DPClientRF
+from distributed_random_forest import DPRandomForest, DPClientRF
 
 
 class TestDPRandomForest:
