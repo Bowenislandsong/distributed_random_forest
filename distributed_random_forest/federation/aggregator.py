@@ -2,7 +2,7 @@
 
 import numpy as np
 from distributed_random_forest.models.tree_utils import evaluate_tree, rank_trees_by_metric
-
+from distributed_random_forest.models.random_forest import RandomForest
 
 def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
     """RF_S_DTs_A: Sort DTs by accuracy within each client RF.
@@ -214,7 +214,7 @@ class FederatedAggregator:
 
         return self.global_trees
 
-    def build_global_rf(self, classes, voting='simple'):
+    def build_global_rf(self, classes=None, voting='simple'):
         """Build global RF from aggregated trees.
 
         Args:
@@ -224,7 +224,6 @@ class FederatedAggregator:
         Returns:
             RandomForest: Global RF instance.
         """
-        from distributed_random_forest.models.random_forest import RandomForest
 
         self.global_rf = RandomForest(voting=voting)
         self.global_rf.set_trees(self.global_trees, classes)
