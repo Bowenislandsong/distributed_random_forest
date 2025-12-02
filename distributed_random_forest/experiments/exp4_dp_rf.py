@@ -8,10 +8,10 @@ Tested ε values: 0.1, 0.5, 1, 5
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from models.dp_rf import DPRandomForest, DPClientRF
-from models.random_forest import RandomForest
-from models.tree_utils import compute_accuracy, compute_weighted_accuracy
-from federation.aggregator import aggregate_trees
+from distributed_random_forest.models.dp_rf import DPRandomForest, DPClientRF
+from distributed_random_forest.models.random_forest import RandomForest
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.federation.aggregator import aggregate_trees
 
 
 def run_exp4_dp_federation(
@@ -59,7 +59,7 @@ def run_exp4_dp_federation(
         epsilon_values = [0.1, 0.5, 1.0, 5.0]
 
     if partitions is None:
-        from experiments.exp2_clients import partition_uniform_random
+        from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
         partitions = partition_uniform_random(X_train, y_train, n_clients, random_state)
 
     if verbose:

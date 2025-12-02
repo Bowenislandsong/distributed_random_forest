@@ -12,8 +12,8 @@ import numpy as np
 from itertools import product
 from sklearn.model_selection import train_test_split
 
-from models.random_forest import RandomForest
-from models.tree_utils import compute_accuracy, compute_weighted_accuracy, compute_f1_score
+from distributed_random_forest.models.random_forest import RandomForest
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy, compute_f1_score
 
 
 def run_exp1_hyperparameter_selection(

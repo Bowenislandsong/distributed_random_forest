@@ -47,12 +47,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Bowenislandsong/distributed_random_forrest"
-Repository = "https://github.com/Bowenislandsong/distributed_random_forrest"
-Issues = "https://github.com/Bowenislandsong/distributed_random_forrest/issues"
+Homepage = "https://github.com/Bowenislandsong/distributed_random_forest"
+Repository = "https://github.com/Bowenislandsong/distributed_random_forest"
+Issues = "https://github.com/Bowenislandsong/distributed_random_forest/issues"
 
 [tool.setuptools.packages.find]
-include = ["models*", "federation*", "experiments*", "data*"]
+include = ["distributed_random_forest*"]
 
 [tool.setuptools]
 license-files = ["LICENSE"]

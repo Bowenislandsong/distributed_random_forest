@@ -5,10 +5,7 @@ import pytest
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
 
-import sys
-sys.path.insert(0, '.')
-
-from models.tree_utils import (
+from distributed_random_forest import (
     compute_accuracy,
     compute_weighted_accuracy,
     compute_f1_score,
