@@ -33,6 +33,7 @@ def main():
         n_clusters_per_class=1,
         random_state=42,
     )
+    y = np.array([f"class_{c}" for c in y])
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
