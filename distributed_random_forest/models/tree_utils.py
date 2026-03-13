@@ -1,7 +1,7 @@
-"""Tree utility functions for computing accuracy metrics."""
+"""Tree utility functions for distributed and federated forests."""
 
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
 
 
 def _map_tree_predictions(y_pred, tree_classes, target_classes):
@@ -43,6 +43,46 @@ def _map_tree_predictions(y_pred, tree_classes, target_classes):
     return y_pred
 
 
+def _map_tree_probabilities(tree_proba, tree_classes, target_classes):
+    """Align per-tree probabilities to a global class ordering.
+
+    This is important when aggregating trees trained on heterogeneous clients,
+    because some clients may not observe every class during local training.
+
+    Args:
+        tree_proba: Array of shape (n_samples, n_tree_classes).
+        tree_classes: Class labels known to the tree.
+        target_classes: Desired global class ordering.
+
+    Returns:
+        ndarray: Probabilities aligned to ``target_classes``.
+    """
+    tree_proba = np.asarray(tree_proba)
+    tree_classes = np.asarray(tree_classes)
+    target_classes = np.asarray(target_classes)
+
+    if np.array_equal(tree_classes, target_classes):
+        return tree_proba
+
+    aligned = np.zeros((tree_proba.shape[0], len(target_classes)), dtype=float)
+    if (
+        tree_classes.dtype != target_classes.dtype
+        and len(tree_classes) == len(target_classes)
+        and np.allclose(tree_classes, np.arange(len(tree_classes), dtype=float))
+    ):
+        aligned[:, :len(tree_classes)] = tree_proba[:, :len(tree_classes)]
+    else:
+        for source_idx, cls in enumerate(tree_classes):
+            target_idx = np.where(target_classes == cls)[0]
+            if len(target_idx) > 0:
+                aligned[:, target_idx[0]] = tree_proba[:, source_idx]
+
+    row_sums = aligned.sum(axis=1, keepdims=True)
+    nonzero_rows = row_sums.squeeze(axis=1) > 0
+    aligned[nonzero_rows] /= row_sums[nonzero_rows]
+    return aligned
+
+
 def compute_accuracy(y_true, y_pred):
     """Compute overall accuracy.
 
@@ -53,7 +93,20 @@ def compute_accuracy(y_true, y_pred):
     Returns:
         float: Accuracy score between 0 and 1.
     """
-    return accuracy_score(y_true, y_pred)
+    return float(accuracy_score(y_true, y_pred))
+
+
+def compute_balanced_accuracy(y_true, y_pred):
+    """Compute balanced accuracy.
+
+    Args:
+        y_true: Ground truth labels.
+        y_pred: Predicted labels.
+
+    Returns:
+        float: Balanced accuracy score between 0 and 1.
+    """
+    return float(balanced_accuracy_score(y_true, y_pred))
 
 
 def compute_weighted_accuracy(y_true, y_pred, classes=None):
@@ -89,7 +142,7 @@ def compute_weighted_accuracy(y_true, y_pred, classes=None):
         return 0.0
 
     mean_per_class_acc = np.mean(per_class_accuracies)
-    return overall_accuracy * mean_per_class_acc
+    return float(overall_accuracy * mean_per_class_acc)
 
 
 def compute_f1_score(y_true, y_pred, average='macro'):
@@ -103,7 +156,47 @@ def compute_f1_score(y_true, y_pred, average='macro'):
     Returns:
         float: F1 score.
     """
-    return f1_score(y_true, y_pred, average=average, zero_division=0)
+    return float(f1_score(y_true, y_pred, average=average, zero_division=0))
+
+
+def compute_class_distribution(y, classes=None):
+    """Summarize class counts for a label vector.
+
+    Args:
+        y: Label vector.
+        classes: Optional explicit class order.
+
+    Returns:
+        dict: Mapping of class label to count.
+    """
+    y = np.asarray(y)
+
+    if classes is None:
+        classes = np.unique(y)
+
+    distribution = {}
+    for cls in classes:
+        distribution[str(cls)] = int(np.sum(y == cls))
+    return distribution
+
+
+def evaluate_predictions(y_true, y_pred, classes=None):
+    """Compute a standard metric bundle for predictions.
+
+    Args:
+        y_true: Ground truth labels.
+        y_pred: Predicted labels.
+        classes: Optional explicit class ordering.
+
+    Returns:
+        dict: Accuracy, weighted accuracy, balanced accuracy, and F1 score.
+    """
+    return {
+        'accuracy': float(compute_accuracy(y_true, y_pred)),
+        'weighted_accuracy': float(compute_weighted_accuracy(y_true, y_pred, classes)),
+        'balanced_accuracy': float(compute_balanced_accuracy(y_true, y_pred)),
+        'f1_score': float(compute_f1_score(y_true, y_pred)),
+    }
 
 
 def evaluate_tree(tree, X_val, y_val, classes=None):
@@ -126,11 +219,7 @@ def evaluate_tree(tree, X_val, y_val, classes=None):
     if classes is not None and hasattr(tree, 'classes_'):
         y_pred = _map_tree_predictions(y_pred, tree.classes_, classes)
 
-    return {
-        'accuracy': compute_accuracy(y_val, y_pred),
-        'weighted_accuracy': compute_weighted_accuracy(y_val, y_pred, classes),
-        'f1_score': compute_f1_score(y_val, y_pred),
-    }
+    return evaluate_predictions(y_val, y_pred, classes)
 
 
 def rank_trees_by_metric(trees, X_val, y_val, metric='accuracy', classes=None):
@@ -146,6 +235,16 @@ def rank_trees_by_metric(trees, X_val, y_val, metric='accuracy', classes=None):
     Returns:
         list: List of (tree, score) tuples sorted by score descending.
     """
+    valid_metrics = {
+        'accuracy',
+        'weighted_accuracy',
+        'balanced_accuracy',
+        'f1_score',
+    }
+    if metric not in valid_metrics:
+        valid_metrics_str = ', '.join(sorted(valid_metrics))
+        raise ValueError(f"Unknown ranking metric: {metric}. Must be one of: {valid_metrics_str}")
+
     scored_trees = []
     for tree in trees:
         metrics = evaluate_tree(tree, X_val, y_val, classes)

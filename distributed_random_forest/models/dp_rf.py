@@ -4,7 +4,10 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier
 
 from distributed_random_forest.models.random_forest import RandomForest
-from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
+from distributed_random_forest.models.tree_utils import (
+    compute_class_distribution,
+    evaluate_predictions,
+)
 
 
 class DPRandomForest(RandomForest):
@@ -29,6 +32,7 @@ class DPRandomForest(RandomForest):
         min_samples_leaf=1,
         random_state=None,
         epsilon=1.0,
+        delta=1e-3,
         dp_mechanism='laplace',
     ):
         """Initialize DP Random Forest.
@@ -54,6 +58,7 @@ class DPRandomForest(RandomForest):
             random_state=random_state,
         )
         self.epsilon = epsilon
+        self.delta = delta
         self.dp_mechanism = dp_mechanism
         self._rng = np.random.default_rng(random_state)
 
@@ -73,6 +78,13 @@ class DPRandomForest(RandomForest):
         """
         X = np.asarray(X)
         y = np.asarray(y)
+
+        if self.epsilon <= 0:
+            raise ValueError("epsilon must be positive")
+        if self.delta < 0:
+            raise ValueError("delta must be non-negative")
+        if self.dp_mechanism not in {'laplace', 'gaussian'}:
+            raise ValueError("dp_mechanism must be either 'laplace' or 'gaussian'")
 
         self._classes = np.unique(y)
         n_samples, n_features = X.shape
@@ -95,6 +107,15 @@ class DPRandomForest(RandomForest):
         else:
             self._tree_weights = np.ones(len(self._trees))
 
+        self.training_summary = {
+            'n_samples': int(len(X)),
+            'n_features': int(X.shape[1]),
+            'n_classes': int(len(self._classes)),
+            'class_distribution': compute_class_distribution(y, self._classes),
+            'epsilon': float(self.epsilon),
+            'delta': float(self.delta),
+            'dp_mechanism': self.dp_mechanism,
+        }
         return self
 
     def _build_dp_tree(self, X, y, epsilon, n_features, random_state):
@@ -159,9 +180,10 @@ class DPRandomForest(RandomForest):
                     noise = rng.laplace(0, scale, size=class_counts.shape)
                 else:
                     # Gaussian mechanism with (epsilon, delta)-DP
-                    # Using delta=0.001 as default, formula from Dwork & Roth (2014)
-                    delta = 0.001
-                    sigma = sensitivity * np.sqrt(2 * np.log(1.25 / delta)) / max(epsilon, 1e-10)
+                    sigma = (
+                        sensitivity * np.sqrt(2 * np.log(1.25 / max(self.delta, 1e-12)))
+                        / max(epsilon, 1e-10)
+                    )
                     noise = rng.normal(0, sigma, size=class_counts.shape)
 
                 noisy_counts = np.maximum(class_counts + noise, 0)
@@ -185,7 +207,7 @@ class DPClientRF:
         rf: DPRandomForest instance.
     """
 
-    def __init__(self, client_id, epsilon=1.0, rf_params=None):
+    def __init__(self, client_id, epsilon=1.0, rf_params=None, client_name=None, metadata=None):
         """Initialize DP client trainer.
 
         Args:
@@ -196,9 +218,14 @@ class DPClientRF:
         self.client_id = client_id
         self.epsilon = epsilon
         self.rf_params = rf_params or {}
+        self.client_name = client_name or f"client-{client_id}"
+        self.metadata = metadata or {}
         self.rf = None
         self.train_metrics = {}
         self.val_metrics = {}
+        self.n_train_samples = 0
+        self.n_validation_samples = 0
+        self.class_distribution = {}
 
     def train(self, X_train, y_train, X_val=None, y_val=None):
         """Train DP Random Forest on client data.
@@ -215,23 +242,14 @@ class DPClientRF:
         self.rf = DPRandomForest(epsilon=self.epsilon, **self.rf_params)
         self.rf.fit(X_train, y_train, X_val, y_val)
 
-        y_pred_train = self.rf.predict(X_train)
-        self.train_metrics = {
-            'accuracy': compute_accuracy(y_train, y_pred_train),
-            'weighted_accuracy': compute_weighted_accuracy(
-                y_train, y_pred_train, self.rf.classes_
-            ),
-            'epsilon': self.epsilon,
-        }
+        self.n_train_samples = int(len(X_train))
+        self.class_distribution = compute_class_distribution(y_train, self.rf.classes_)
+        self.train_metrics = self.rf.evaluate(X_train, y_train)
+        self.train_metrics['epsilon'] = self.epsilon
 
         if X_val is not None and y_val is not None:
-            y_pred_val = self.rf.predict(X_val)
-            self.val_metrics = {
-                'accuracy': compute_accuracy(y_val, y_pred_val),
-                'weighted_accuracy': compute_weighted_accuracy(
-                    y_val, y_pred_val, self.rf.classes_
-                ),
-            }
+            self.n_validation_samples = int(len(X_val))
+            self.val_metrics = self.rf.evaluate(X_val, y_val)
 
         return self
 
@@ -254,11 +272,20 @@ class DPClientRF:
         if self.rf is None:
             raise RuntimeError("DP-RF not trained")
 
-        y_pred = self.rf.predict(X_test)
+        metrics = evaluate_predictions(y_test, self.rf.predict(X_test), self.rf.classes_)
+        metrics['epsilon'] = self.epsilon
+        return metrics
+
+    def summary(self):
+        """Return a JSON-serializable snapshot of the DP client state."""
         return {
-            'accuracy': compute_accuracy(y_test, y_pred),
-            'weighted_accuracy': compute_weighted_accuracy(
-                y_test, y_pred, self.rf.classes_
-            ),
+            'client_id': self.client_id,
+            'client_name': self.client_name,
             'epsilon': self.epsilon,
+            'n_train_samples': self.n_train_samples,
+            'n_validation_samples': self.n_validation_samples,
+            'class_distribution': self.class_distribution,
+            'train_metrics': self.train_metrics,
+            'val_metrics': self.val_metrics,
+            'metadata': self.metadata,
         }

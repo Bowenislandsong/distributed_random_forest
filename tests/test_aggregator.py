@@ -1,18 +1,17 @@
 """Unit tests for aggregation strategies."""
 
-import numpy as np
 import pytest
 from sklearn.datasets import make_classification
 
 from distributed_random_forest import (
-    RandomForest,
     ClientRF,
-    rf_s_dts_a,
-    rf_s_dts_wa,
-    rf_s_dts_a_all,
-    rf_s_dts_wa_all,
-    aggregate_trees,
     FederatedAggregator,
+    RandomForest,
+    aggregate_trees,
+    rf_s_dts_a,
+    rf_s_dts_a_all,
+    rf_s_dts_wa,
+    rf_s_dts_wa_all,
 )
 
 

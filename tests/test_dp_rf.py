@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from sklearn.datasets import make_classification
 
-from distributed_random_forest import DPRandomForest, DPClientRF
+from distributed_random_forest import DPClientRF, DPRandomForest
 
 
 class TestDPRandomForest:
@@ -98,7 +98,7 @@ class TestDPRandomForest:
         
         # Generally, higher epsilon should give better accuracy (less noise)
         # But we just check they all produce valid scores
-        for epsilon, score in results.items():
+        for _epsilon, score in results.items():
             assert 0 <= score <= 1
 
     def test_weighted_voting_with_validation(self, sample_data):

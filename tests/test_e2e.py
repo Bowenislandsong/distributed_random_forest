@@ -6,14 +6,15 @@ from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
 from distributed_random_forest import (
-    RandomForest,
     ClientRF,
-    DPRandomForest,
     DPClientRF,
     FederatedAggregator,
-    aggregate_trees,
+    RandomForest,
 )
-from distributed_random_forest.experiments.exp1_hparams import quick_hyperparameter_selection, get_default_best_params
+from distributed_random_forest.experiments.exp1_hparams import (
+    get_default_best_params,
+    quick_hyperparameter_selection,
+)
 from distributed_random_forest.experiments.exp2_clients import (
     partition_uniform_random,
     run_exp2_independent_clients,
@@ -148,7 +149,7 @@ class TestEndToEndPipeline:
             results[strategy] = metrics['accuracy']
         
         # All strategies should produce valid results
-        for strategy, accuracy in results.items():
+        for _strategy, accuracy in results.items():
             assert 0 <= accuracy <= 1
             assert accuracy > 0  # Should make some correct predictions
 
@@ -182,7 +183,6 @@ class TestEndToEndPipeline:
         global_metrics = aggregator.evaluate(X_test, y_test)
         
         # Global should be at least as good as average client
-        avg_client_accuracy = np.mean(client_accuracies)
         # This is a soft check - federation should help
         assert global_metrics['accuracy'] >= 0  # At minimum, produces valid results
 

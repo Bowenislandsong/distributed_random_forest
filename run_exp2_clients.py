@@ -4,7 +4,6 @@
 Train RFs on partitioned data with different partitioning strategies.
 """
 
-import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 
@@ -12,7 +11,6 @@ from distributed_random_forest.experiments.exp1_hparams import get_default_best_
 from distributed_random_forest.experiments.exp2_clients import (
     run_exp2_1_feature_partitioning,
     run_exp2_2_uniform_partitioning,
-    run_exp2_3_sized_partitioning,
 )
 
 

@@ -12,8 +12,8 @@ from distributed_random_forest import RandomForest
 from distributed_random_forest.experiments.exp1_hparams import get_default_best_params
 from distributed_random_forest.experiments.exp2_clients import run_exp2_2_uniform_partitioning
 from distributed_random_forest.experiments.exp3_global_rf import (
-    run_exp3_federated_aggregation,
     compare_with_baseline,
+    run_exp3_federated_aggregation,
 )
 
 

@@ -2,14 +2,14 @@
 
 import numpy as np
 import pytest
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
+from sklearn.tree import DecisionTreeClassifier
 
 from distributed_random_forest import (
-    simple_voting,
-    weighted_voting,
     compute_tree_weights_from_accuracy,
     compute_tree_weights_from_weighted_accuracy,
+    simple_voting,
+    weighted_voting,
 )
 
 

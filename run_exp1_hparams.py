@@ -6,10 +6,8 @@ Grid search over RF hyperparameters to find the best configuration.
 
 import numpy as np
 from sklearn.datasets import make_classification
-from sklearn.model_selection import train_test_split
 
 from distributed_random_forest.experiments.exp1_hparams import (
-    run_exp1_hyperparameter_selection,
     quick_hyperparameter_selection,
 )
 

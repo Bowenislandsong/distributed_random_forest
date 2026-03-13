@@ -1,0 +1,45 @@
+site_name: Distributed Random Forest
+site_description: Enterprise-grade distributed and federated random forests for Python teams
+site_url: https://bowenislandsong.github.io/distributed_random_forest/
+repo_url: https://github.com/Bowenislandsong/distributed_random_forest
+repo_name: Bowenislandsong/distributed_random_forest
+
+theme:
+  name: material
+  font: false
+  features:
+    - navigation.instant
+    - navigation.sections
+    - content.code.copy
+    - content.action.edit
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Architecture: architecture.md
+  - Distributed Strategies: distributed-strategies.md
+  - Examples: examples.md
+  - Operations: operations.md
+  - API: api.md

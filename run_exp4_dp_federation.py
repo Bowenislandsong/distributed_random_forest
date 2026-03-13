@@ -13,9 +13,9 @@ from distributed_random_forest.experiments.exp1_hparams import get_default_best_
 from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
 from distributed_random_forest.experiments.exp3_global_rf import run_exp3_federated_aggregation
 from distributed_random_forest.experiments.exp4_dp_rf import (
-    run_exp4_dp_federation,
     compare_dp_vs_non_dp,
     get_dp_degradation_curve,
+    run_exp4_dp_federation,
 )
 
 
