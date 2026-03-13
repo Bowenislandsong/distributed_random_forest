@@ -38,6 +38,27 @@ This project goes further:
 - Research benchmarks for tree-selection strategies under non-IID client splits.
 - CI-verified Python packages that ship clean docs, examples, and release workflows.
 
+## Why This Implementation Stands Out
+
+| Area | Baseline script repo | This project |
+| --- | --- | --- |
+| Federated workflow | ad hoc experiments | reusable orchestration API |
+| Heterogeneity | mostly uniform data splits | uniform, stratified, feature, sized, Dirichlet, label skew |
+| Aggregation | one or two selection rules | classic paper rules plus balanced, proportional, threshold, and auto search |
+| Operational maturity | code only | package, CLI, CI, docs, GitHub Pages, release workflow |
+
+## Performance Snapshot
+
+Single-run local benchmark on a synthetic 4-class dataset. Reproduce with
+`python examples/performance_benchmark.py`.
+
+| Scenario | Accuracy | Time (s) | Strategy |
+| --- | ---: | ---: | --- |
+| Centralized RF | 0.8642 | 0.35 | n/a |
+| Federated uniform | 0.7842 | 1.44 | `proportional_weighted_accuracy` |
+| Federated dirichlet | 0.7642 | 1.42 | `proportional_weighted_accuracy` |
+| Federated dirichlet + DP | 0.5125 | 0.74 | `top_k_global_balanced_accuracy` |
+
 ## Quick Install
 
 ```bash

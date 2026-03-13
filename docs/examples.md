@@ -15,6 +15,10 @@ Dirichlet non-IID client simulation plus explicit report export.
 
 Differentially private client training with balanced aggregation and JSON output.
 
+### `performance_benchmark.py`
+
+Reproducible benchmark script used for the README and docs performance snapshot.
+
 ## Example Use Cases
 
 ### Network intrusion detection
@@ -40,6 +44,7 @@ trade-off across `epsilon` values.
 python examples/basic_federated_training.py
 python examples/non_iid_dirichlet.py
 python examples/dp_enterprise_workflow.py
+python examples/performance_benchmark.py
 ```
 
 ## Quick CLI Demo

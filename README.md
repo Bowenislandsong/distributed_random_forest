@@ -6,46 +6,66 @@
 [![Docs](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-Distributed Random Forest is a Python toolkit for federated and distributed tree
-ensembles. It started from a paper-inspired baseline and has been expanded into
-a more complete platform with:
+Distributed Random Forest is a Python package for federated and distributed tree
+ensembles. It is designed for people who need more than "train a few local
+forests and concatenate the trees":
 
-- federated client orchestration
-- parallel training backends
-- non-IID partitioning strategies
-- richer aggregation strategies
-- optional differential privacy
-- structured JSON reports
-- PyPI packaging
-- CI, release, and docs automation
-- GitHub Pages documentation
+- realistic client partitioning, including non-IID splits
+- multiple aggregation strategies instead of one hard-coded merge rule
+- parallel client training backends
+- structured reports for benchmarking and audits
+- runnable examples, docs, tests, CI, and PyPI packaging
 
-## What Makes It Better
+This README is used on both GitHub and PyPI. The top half is package-user
+focused so the PyPI page answers "why should I install this?" before it dives
+into repo internals.
 
-The original implementation already supported the paper-style workflow of:
+## Why This Implementation Is Different
 
-1. train client forests
-2. rank trees
-3. merge them into a global forest
+Most distributed RF repositories are really experiment scripts. This one is a
+reusable package with a benchmarkable orchestration layer.
 
-This repo now also supports the broader engineering work around that core:
+| Area | Typical paper-style repo | This implementation |
+| --- | --- | --- |
+| Distributed workflow | manual scripts | `FederatedRandomForest` orchestration API |
+| Client heterogeneity | mostly uniform splits | `uniform`, `stratified`, `feature`, `sized`, `dirichlet`, `label_skew` |
+| Tree aggregation | one or two ranking rules | classic paper rules plus balanced, proportional, threshold, and auto search |
+| Execution | sequential only | sequential, thread, and process backends |
+| Reporting | print statements | JSON run reports with partition, client, and strategy summaries |
+| Privacy | often omitted | built-in DP RF support for experimentation and comparison |
+| Packaging | code snapshot | PyPI package, CLI, docs site, CI, release workflow |
 
-- `FederatedRandomForest` for end-to-end orchestration
-- `uniform`, `stratified`, `feature`, `sized`, `dirichlet`, and `label_skew` partitioning
-- legacy aggregation strategies plus `balanced_accuracy`, `proportional`, and `threshold` selectors
-- sequential, thread, and process execution backends
-- client summaries and exportable run reports
-- documentation site generation with MkDocs Material
+## What Is Special About This Package
 
-## Installation
+The main differentiator is that the package separates three concerns cleanly:
 
-### Users
+1. `models`
+   Local RF and DP-RF training.
+2. `federation`
+   Tree ranking, voting, and aggregation.
+3. `distributed`
+   Partitioning, parallel client training, strategy search, and report export.
+
+That makes it useful for both:
+
+- researchers comparing aggregation strategies under non-IID data
+- engineers who want a callable library instead of notebook-only code
+
+## Good Use Cases
+
+- Network intrusion detection where traffic distributions differ by site.
+- Fraud or risk scoring across branches, regions, or subsidiaries.
+- Edge/IoT classification where each site owns a small, skewed local dataset.
+- Privacy-sensitive health or security workflows that need federated baselines.
+- Benchmarking how aggregation strategies behave under controlled heterogeneity.
+
+## Install
 
 ```bash
 pip install distributed-random-forest
 ```
 
-### Contributors
+From source:
 
 ```bash
 git clone https://github.com/Bowenislandsong/distributed_random_forrest
@@ -53,15 +73,9 @@ cd distributed_random_forrest
 python -m pip install -e ".[dev,docs]"
 ```
 
-## Quickstart
+## Quick Examples
 
-### CLI
-
-```bash
-drf-quickstart --clients 4 --partition-strategy dirichlet --backend thread
-```
-
-### Python API
+### 1. End-to-end federated training
 
 ```python
 from sklearn.datasets import make_classification
@@ -89,7 +103,7 @@ model = FederatedRandomForest(
     n_clients=4,
     rf_params={"n_estimators": 24, "random_state": 42, "voting": "weighted"},
     partition_strategy="dirichlet",
-    partition_kwargs={"alpha": 0.5},
+    partition_kwargs={"alpha": 0.8},
     aggregation_strategy="auto",
     execution_backend="thread",
     max_workers=4,
@@ -101,6 +115,56 @@ metrics = model.evaluate(X_test, y_test)
 print(model.selected_strategy)
 print(metrics)
 ```
+
+### 2. Quick CLI smoke test
+
+```bash
+drf-quickstart --clients 4 --partition-strategy dirichlet --backend thread
+```
+
+### 3. Differential privacy baseline
+
+```python
+from distributed_random_forest import FederatedRandomForest
+
+model = FederatedRandomForest(
+    n_clients=5,
+    rf_params={"n_estimators": 20, "random_state": 13},
+    partition_strategy="stratified",
+    aggregation_strategy="top_k_global_balanced_accuracy",
+    use_differential_privacy=True,
+    epsilon=10.0,
+    random_state=13,
+)
+```
+
+More runnable examples:
+
+- [basic_federated_training.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/basic_federated_training.py)
+- [non_iid_dirichlet.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/non_iid_dirichlet.py)
+- [dp_enterprise_workflow.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/dp_enterprise_workflow.py)
+- [performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/performance_benchmark.py)
+
+## Performance Snapshot
+
+The table below comes from a local single-run benchmark on a synthetic
+multiclass dataset with 6,000 samples, 40 features, and 4 classes. It is meant
+to show the relative behavior of this implementation, not to claim a universal
+leaderboard. You can reproduce it with
+[examples/performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/performance_benchmark.py).
+
+| Scenario | Accuracy | Balanced Acc. | Weighted Acc. | F1 | Time (s) | Strategy |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Centralized RF | 0.8642 | 0.8641 | 0.7467 | 0.8640 | 0.35 | n/a |
+| Federated uniform | 0.7842 | 0.7840 | 0.6148 | 0.7833 | 1.44 | `proportional_weighted_accuracy` |
+| Federated dirichlet | 0.7642 | 0.7642 | 0.5840 | 0.7599 | 1.42 | `proportional_weighted_accuracy` |
+| Federated dirichlet + DP | 0.5125 | 0.5129 | 0.2629 | 0.4950 | 0.74 | `top_k_global_balanced_accuracy` |
+
+What this shows:
+
+- the package preserves a large share of centralized accuracy under realistic federated splits
+- non-IID partitions are supported as first-class workflows, not afterthought scripts
+- DP support is available, with the expected privacy/utility tradeoff clearly visible
 
 ## Supported Distributed RF Patterns
 
@@ -124,23 +188,21 @@ print(metrics)
 - `proportional_weighted_accuracy`
 - `proportional_balanced_accuracy`
 - `threshold_weighted_accuracy`
-- `auto` strategy search via `FederatedRandomForest`
+- automatic strategy search through `FederatedRandomForest(aggregation_strategy="auto")`
 
-## Differential Privacy
+## What You Get In The Package
 
-Built-in DP training is available through `DPRandomForest`, `DPClientRF`, and
-`FederatedRandomForest(..., use_differential_privacy=True, epsilon=...)`.
-
-## Examples
-
-- [`examples/basic_federated_training.py`](examples/basic_federated_training.py)
-- [`examples/non_iid_dirichlet.py`](examples/non_iid_dirichlet.py)
-- [`examples/dp_enterprise_workflow.py`](examples/dp_enterprise_workflow.py)
+- `RandomForest` and `DPRandomForest` for local models
+- `ClientRF` and `DPClientRF` for client-scoped training and evaluation
+- `FederatedAggregator` for explicit tree-selection experiments
+- `FederatedRandomForest` for end-to-end orchestration
+- partitioning utilities and JSON run report export
+- a CLI, examples, tests, docs, and release automation
 
 ## Documentation
 
-- GitHub Pages site: [bowenislandsong.github.io/distributed_random_forrest](https://bowenislandsong.github.io/distributed_random_forrest/)
-- Docs source: [`docs/`](docs/)
+- Docs site: [bowenislandsong.github.io/distributed_random_forrest](https://bowenislandsong.github.io/distributed_random_forrest/)
+- Docs source: [docs/](https://github.com/Bowenislandsong/distributed_random_forrest/tree/main/docs)
 
 ## Development
 
@@ -169,11 +231,6 @@ distributed_random_forest/
   federation/    # aggregation and voting
   models/        # local RF implementations
 docs/            # GitHub Pages / MkDocs site
-examples/        # runnable use cases
-tests/           # regression and end-to-end tests
+examples/        # runnable use cases and benchmark scripts
+tests/           # regression and end-to-end coverage
 ```
-
-## Status
-
-The test suite currently covers the legacy APIs and the new orchestration,
-partitioning, aggregation, and string-label behaviors.
