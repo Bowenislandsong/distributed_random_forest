@@ -1,8 +1,8 @@
 site_name: Distributed Random Forest
 site_description: Enterprise-grade distributed and federated random forests for Python teams
-site_url: https://bowenislandsong.github.io/distributed_random_forest/
-repo_url: https://github.com/Bowenislandsong/distributed_random_forest
-repo_name: Bowenislandsong/distributed_random_forest
+site_url: https://bowenislandsong.github.io/distributed_random_forrest/
+repo_url: https://github.com/Bowenislandsong/distributed_random_forrest
+repo_name: Bowenislandsong/distributed_random_forrest
 
 theme:
   name: material

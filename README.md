@@ -2,8 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/distributed-random-forest)](https://pypi.org/project/distributed-random-forest/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/distributed-random-forest)](https://pypi.org/project/distributed-random-forest/)
-[![Tests](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/ci.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/ci.yml)
-[![Docs](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/docs.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/docs.yml)
+[![Tests](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/ci.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/ci.yml)
+[![Docs](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 Distributed Random Forest is a Python toolkit for federated and distributed tree
@@ -48,8 +48,8 @@ pip install distributed-random-forest
 ### Contributors
 
 ```bash
-git clone https://github.com/Bowenislandsong/distributed_random_forest
-cd distributed_random_forest
+git clone https://github.com/Bowenislandsong/distributed_random_forrest
+cd distributed_random_forrest
 python -m pip install -e ".[dev,docs]"
 ```
 
@@ -139,7 +139,7 @@ Built-in DP training is available through `DPRandomForest`, `DPClientRF`, and
 
 ## Documentation
 
-- GitHub Pages site: [bowenislandsong.github.io/distributed_random_forest](https://bowenislandsong.github.io/distributed_random_forest/)
+- GitHub Pages site: [bowenislandsong.github.io/distributed_random_forrest](https://bowenislandsong.github.io/distributed_random_forrest/)
 - Docs source: [`docs/`](docs/)
 
 ## Development

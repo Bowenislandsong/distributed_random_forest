@@ -9,8 +9,8 @@ pip install distributed-random-forest
 ### Contributors
 
 ```bash
-git clone https://github.com/Bowenislandsong/distributed_random_forest
-cd distributed_random_forest
+git clone https://github.com/Bowenislandsong/distributed_random_forrest
+cd distributed_random_forrest
 python -m pip install -e ".[dev,docs]"
 ```
 
