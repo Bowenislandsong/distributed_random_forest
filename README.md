@@ -2,8 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/distributed-random-forest)](https://pypi.org/project/distributed-random-forest/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/distributed-random-forest)](https://pypi.org/project/distributed-random-forest/)
-[![Tests](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/ci.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/ci.yml)
-[![Docs](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forrest/actions/workflows/docs.yml)
+[![Tests](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/ci.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/ci.yml)
+[![Docs](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/docs.yml/badge.svg)](https://github.com/Bowenislandsong/distributed_random_forest/actions/workflows/docs.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 Distributed Random Forest is a Python package for federated and distributed tree
@@ -68,8 +68,8 @@ pip install distributed-random-forest
 From source:
 
 ```bash
-git clone https://github.com/Bowenislandsong/distributed_random_forrest
-cd distributed_random_forrest
+git clone https://github.com/Bowenislandsong/distributed_random_forest
+cd distributed_random_forest
 python -m pip install -e ".[dev,docs]"
 ```
 
@@ -140,10 +140,10 @@ model = FederatedRandomForest(
 
 More runnable examples:
 
-- [basic_federated_training.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/basic_federated_training.py)
-- [non_iid_dirichlet.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/non_iid_dirichlet.py)
-- [dp_enterprise_workflow.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/dp_enterprise_workflow.py)
-- [performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/performance_benchmark.py)
+- [basic_federated_training.py](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/examples/basic_federated_training.py)
+- [non_iid_dirichlet.py](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/examples/non_iid_dirichlet.py)
+- [dp_enterprise_workflow.py](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/examples/dp_enterprise_workflow.py)
+- [performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/examples/performance_benchmark.py)
 
 ## Performance Snapshot
 
@@ -151,7 +151,7 @@ The table below comes from a local single-run benchmark on a synthetic
 multiclass dataset with 6,000 samples, 40 features, and 4 classes. It is meant
 to show the relative behavior of this implementation, not to claim a universal
 leaderboard. You can reproduce it with
-[examples/performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forrest/blob/main/examples/performance_benchmark.py).
+[examples/performance_benchmark.py](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/examples/performance_benchmark.py).
 
 | Scenario | Accuracy | Balanced Acc. | Weighted Acc. | F1 | Time (s) | Strategy |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
@@ -201,8 +201,8 @@ What this shows:
 
 ## Documentation
 
-- Docs site: [bowenislandsong.github.io/distributed_random_forrest](https://bowenislandsong.github.io/distributed_random_forrest/)
-- Docs source: [docs/](https://github.com/Bowenislandsong/distributed_random_forrest/tree/main/docs)
+- Docs site: [bowenislandsong.github.io/distributed_random_forest](https://bowenislandsong.github.io/distributed_random_forest/)
+- Docs source: [docs/](https://github.com/Bowenislandsong/distributed_random_forest/tree/main/docs)
 
 ## Development
 

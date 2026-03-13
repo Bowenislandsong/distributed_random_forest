@@ -1,7 +1,7 @@
 ## Included Examples
 
 The repository ships with runnable examples in
-[the `examples/` directory](https://github.com/Bowenislandsong/distributed_random_forrest/tree/main/examples).
+[the `examples/` directory](https://github.com/Bowenislandsong/distributed_random_forest/tree/main/examples).
 
 ### `basic_federated_training.py`
 
