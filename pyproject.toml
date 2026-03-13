@@ -12,12 +12,18 @@ requires-python = ">=3.9"
 authors = [
     { name = "Bowen Song" }
 ]
+maintainers = [
+    { name = "Bowen Song" }
+]
 keywords = [
     "machine-learning",
     "random-forest",
     "federated-learning",
     "differential-privacy",
-    "distributed-computing"
+    "distributed-computing",
+    "health-ai",
+    "explainable-ai",
+    "scalable-ml-systems",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -57,7 +63,11 @@ privacy = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Bowenislandsong/distributed_random_forest"
+Homepage = "https://bowenislandsong.github.io/#/personal"
+Author = "https://bowenislandsong.github.io/#/personal"
+Personal_Site = "https://bowenislandsong.github.io/#/personal"
+CV = "https://bowenislandsong.github.io/img/resume/Bowen_Song_Resume.pdf"
+ORCID = "https://orcid.org/0000-0002-5071-3880"
 Repository = "https://github.com/Bowenislandsong/distributed_random_forest"
 Issues = "https://github.com/Bowenislandsong/distributed_random_forest/issues"
 Documentation = "https://bowenislandsong.github.io/distributed_random_forest/"

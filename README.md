@@ -20,6 +20,22 @@ This README is used on both GitHub and PyPI. The top half is package-user
 focused so the PyPI page answers "why should I install this?" before it dives
 into repo internals.
 
+## Creator
+
+Distributed Random Forest is maintained by
+[Bowen Song](https://bowenislandsong.github.io/#/personal), an AI Scientist and
+PhD candidate at USC Viterbi whose work spans health AI, federated learning,
+medical imaging, differential privacy, explainable AI, and scalable machine
+learning systems. The package is meant to bridge research-style RF federation
+ideas with something that feels usable as an actual Python project.
+
+If you arrive here from PyPI and want the fuller background behind the project,
+see:
+
+- Personal site: [bowenislandsong.github.io/#/personal](https://bowenislandsong.github.io/#/personal)
+- CV: [Bowen_Song_Resume.pdf](https://bowenislandsong.github.io/img/resume/Bowen_Song_Resume.pdf)
+- ORCID: [0000-0002-5071-3880](https://orcid.org/0000-0002-5071-3880)
+
 ## Why This Implementation Is Different
 
 Most distributed RF repositories are really experiment scripts. This one is a

@@ -31,6 +31,19 @@ This project goes further:
   </div>
 </div>
 
+## Maintainer
+
+This project is maintained by
+[Bowen Song](https://bowenislandsong.github.io/#/personal), an AI Scientist and
+PhD candidate at USC Viterbi working across health AI, federated learning,
+explainable AI, and scalable machine-learning systems. The project’s
+positioning is intentionally research-aware but package-first: it should be
+useful for reproducible experiments, demos, and real engineering evaluation.
+
+- Personal site: [bowenislandsong.github.io/#/personal](https://bowenislandsong.github.io/#/personal)
+- CV: [Bowen_Song_Resume.pdf](https://bowenislandsong.github.io/img/resume/Bowen_Song_Resume.pdf)
+- ORCID: [0000-0002-5071-3880](https://orcid.org/0000-0002-5071-3880)
+
 ## What You Can Build
 
 - Privacy-sensitive security analytics where data must remain on client sites.
