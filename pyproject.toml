@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "distributed-random-forest"
-version = "0.3.0"
+version = "0.3.1"
 description = "Enterprise-ready distributed and federated Random Forests with orchestration, strategy search, and optional differential privacy"
 readme = "README.md"
 license = { file = "LICENSE" }
