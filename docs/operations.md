@@ -24,9 +24,9 @@ to `main` (and on manual dispatch).
 
 ## PyPI Publishing
 
-The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **version tag** `v*` is pushed (or on manual `workflow_dispatch`). It builds an sdist and wheel, then uploads to PyPI using the repository secret **`PYPI_ALL`** (a [PyPI API token](https://pypi.org/manage/account/token/); the workflow uses the username `__token__`). The workflow sets **`attestations: false`** on the uploader, because [digital attestations](https://github.com/pypa/gh-action-pypi-publish#generating-and-uploading-attestations) require *Trusted Publishing* (OIDC), not a static token.
+The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **version tag** `v*` is pushed (or on manual `workflow_dispatch`). It builds an sdist and wheel, then uploads to PyPI using the repository secret **`PYPI`** (a [PyPI API token](https://pypi.org/manage/account/token/); the workflow uses the username `__token__`). The workflow sets **`attestations: false`** on the uploader, because [digital attestations](https://github.com/pypa/gh-action-pypi-publish#generating-and-uploading-attestations) require *Trusted Publishing* (OIDC), not a static token.
 
-1. In the GitHub repository: **Settings → Secrets and variables → Actions**, add **`PYPI_ALL`** with the token value (`pypi-…`).
+1. In the GitHub repository: **Settings → Secrets and variables → Actions**, add **`PYPI`** with the token value (`pypi-…`).
 2. On PyPI, ensure the `distributed-random-forest` project exists and the token is scoped to that project (or the whole account, if you use a user-wide token with care).
 3. Tag the release commit and push the tag, for example: `git tag v0.4.0` and `git push origin v0.4.0`. The **Publish** workflow runs on that tag and uploads sdist and wheel to PyPI.
 4. (Optional) Add a [GitHub Release](https://github.com/Bowenislandsong/distributed_random_forest/releases) for the same tag for release notes in the web UI. Use **Releases → Draft a new release**, pick the tag, and publish (this does not need to re-upload to PyPI).

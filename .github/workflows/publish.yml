@@ -1,7 +1,7 @@
 # PyPI: upload when a version tag (v*) is pushed. This avoids a second upload
 # when you later add a “GitHub Release” from the same tag.
 #
-# Secret: add PYPI_ALL (PyPI API token) in repo Actions secrets.
+# Secret: add PYPI (PyPI API token) in repo Actions secrets.
 # https://github.com/pypa/gh-action-pypi-publish
 name: Publish
 
@@ -49,11 +49,11 @@ jobs:
       - name: Check PyPI token is configured
         run: |
           if [ -z "$PYPI_TOKEN" ]; then
-            echo '::error::Add repository secret PYPI_ALL (PyPI API token from https://pypi.org/manage/account/token/)'
+            echo '::error::Add repository secret PYPI (PyPI API token from https://pypi.org/manage/account/token/)'
             exit 1
           fi
         env:
-          PYPI_TOKEN: ${{ secrets.PYPI_ALL }}
+          PYPI_TOKEN: ${{ secrets.PYPI }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -65,7 +65,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: "__token__"
-          password: ${{ secrets.PYPI_ALL }}
+          password: ${{ secrets.PYPI }}
           # Attestations (PEP 740) require Trusted Publishing (OIDC + id-token: write),
-          # not a static API token. Keep off when using PYPI_ALL.
+          # not a static API token. Keep off when using a stored API token.
           attestations: false
