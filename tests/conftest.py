@@ -3,7 +3,10 @@
 import numpy as np
 import pytest
 
-from distributed_random_forest.datasets.public import BreastCancerBenchmark, load_breast_cancer_bench
+from distributed_random_forest.datasets.public import (
+    BreastCancerBenchmark,
+    load_breast_cancer_bench,
+)
 
 
 @pytest.fixture

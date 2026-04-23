@@ -69,8 +69,8 @@ def compute_tree_weights_from_accuracy(trees, X_val, y_val, classes=None):
         ndarray: Normalized weights for each tree.
     """
     from distributed_random_forest.models.tree_utils import (
-        compute_accuracy,
         _map_tree_predictions,
+        compute_accuracy,
     )
 
     weights = []
@@ -99,8 +99,8 @@ def compute_tree_weights_from_weighted_accuracy(trees, X_val, y_val, classes=Non
         ndarray: Normalized weights for each tree.
     """
     from distributed_random_forest.models.tree_utils import (
-        compute_weighted_accuracy,
         _map_tree_predictions,
+        compute_weighted_accuracy,
     )
 
     weights = []

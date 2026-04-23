@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+
 def test_benchmark_cli_quick_mode():
     root = Path(__file__).resolve().parent.parent
     script = root / "examples" / "benchmark_public_dataset.py"

@@ -2,13 +2,13 @@
 
 import numpy as np
 import pytest
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.datasets import make_classification
+from sklearn.tree import DecisionTreeClassifier
 
 from distributed_random_forest import (
     compute_accuracy,
-    compute_weighted_accuracy,
     compute_f1_score,
+    compute_weighted_accuracy,
     evaluate_tree,
     rank_trees_by_metric,
 )

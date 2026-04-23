@@ -1,23 +1,62 @@
 # Getting started
 
-## Install from PyPI
+## Installation
+
+### End users
 
 ```bash
 pip install distributed-random-forest
 ```
 
-## Editable install (source)
+### Contributors
 
 ```bash
-git clone https://github.com/Bowenislandsong/distributed_random_forest.git
+git clone https://github.com/Bowenislandsong/distributed_random_forest
 cd distributed_random_forest
-pip install -e .
+python -m pip install -e ".[dev,docs]"
 ```
 
-## Development dependencies
+Editable install is also fine with `pip install -e .` and optional extras as needed.
 
-```bash
-pip install -e ".[dev]"
+## First federated run
+
+```python
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
+from distributed_random_forest import FederatedRandomForest
+
+X, y = make_classification(
+    n_samples=1200,
+    n_features=20,
+    n_classes=3,
+    n_informative=10,
+    random_state=42,
+)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y,
+)
+
+model = FederatedRandomForest(
+    n_clients=4,
+    rf_params={"n_estimators": 24, "random_state": 42, "voting": "weighted"},
+    partition_strategy="dirichlet",
+    partition_kwargs={"alpha": 0.5},
+    aggregation_strategy="auto",
+    execution_backend="thread",
+    max_workers=4,
+    random_state=42,
+)
+
+model.fit(X_train, y_train)
+metrics = model.evaluate(X_test, y_test)
+print(model.selected_strategy)
+print(metrics)
 ```
 
 ## Build the documentation
@@ -38,6 +77,26 @@ mkdocs serve    # local preview
 | EXP 4 — DP federation | `python run_exp4_dp_federation.py` |
 | UCI example (accuracy & latency) | `python examples/benchmark_public_dataset.py` — use `--quick` for a short run |
 
+## Local quality checks
+
+If the repo includes a `Makefile`:
+
+```bash
+make test
+make lint
+make docs
+make build
+```
+
+Without `make`:
+
+```bash
+python -m pytest tests -q
+python -m ruff check .
+python -m mkdocs build --strict
+python -m build
+```
+
 ## Run tests
 
 ```bash
@@ -50,7 +109,7 @@ With coverage of the `distributed_random_forest` package:
 pytest tests/ -v --cov=distributed_random_forest
 ```
 
-Targeted suites (examples):
+Targeted suites:
 
 | File | Focus |
 |------|--------|
@@ -64,9 +123,43 @@ Targeted suites (examples):
 | `tests/test_datasets.py` | Public dataset loader |
 | `tests/test_performance.py` | Accuracy / latency bounds (marked `performance`) |
 | `tests/test_examples_run.py` | Example script smoke test |
-| `tests/test_parallel_e2e.py` | E2E: ``n_jobs=1`` vs ``-1`` parity (federated, EXP3) |
+| `tests/test_parallel_e2e.py` | E2E: `n_jobs=1` vs `-1` parity (federated, EXP3) |
 | `tests/test_parallel_stress.py` | Stress: many clients/trees, ranking load |
-| `tests/test_parallelism.py` | :func:`resolve_n_jobs` |
+| `tests/test_parallelism.py` | `resolve_n_jobs` |
+
+## Differential privacy
+
+Differential privacy is optional. The built-in DP mode works without extra packages:
+
+```python
+model = FederatedRandomForest(
+    n_clients=5,
+    rf_params={"n_estimators": 16, "random_state": 7},
+    use_differential_privacy=True,
+    epsilon=2.0,
+)
+```
+
+For optional privacy tooling as well:
+
+```bash
+python -m pip install -e ".[privacy]"
+```
+
+## Reports
+
+Every orchestrated run can export a JSON report:
+
+```python
+model.export_report("artifacts/federated-run.json")
+```
+
+That report includes:
+
+- client sample counts and training metrics
+- partition summaries
+- evaluated aggregation strategies
+- validation and final test metrics
 
 ## Next steps
 

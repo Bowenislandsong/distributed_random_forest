@@ -8,10 +8,11 @@ Tested ε values: 0.1, 0.5, 1, 5
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from distributed_random_forest.models.dp_rf import DPRandomForest, DPClientRF
+from distributed_random_forest.distributed.partitioning import partition_uniform_random
+from distributed_random_forest.federation.aggregator import aggregate_trees
+from distributed_random_forest.models.dp_rf import DPClientRF
 from distributed_random_forest.models.random_forest import RandomForest
 from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
-from distributed_random_forest.federation.aggregator import aggregate_trees
 
 
 def run_exp4_dp_federation(
@@ -62,11 +63,10 @@ def run_exp4_dp_federation(
         epsilon_values = [0.1, 0.5, 1.0, 5.0]
 
     if partitions is None:
-        from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
         partitions = partition_uniform_random(X_train, y_train, n_clients, random_state)
 
     if verbose:
-        print(f"\nEXP 4: Federated RF with Differential Privacy")
+        print("\nEXP 4: Federated RF with Differential Privacy")
         print(f"Epsilon values: {epsilon_values}")
         print(f"Number of clients: {len(partitions)}")
         print(f"Aggregation strategy: {aggregation_strategy}")
@@ -91,7 +91,7 @@ def run_exp4_dp_federation(
                     random_state=random_state,
                     stratify=y_client if len(np.unique(y_client)) > 1 else None,
                 )
-            except ValueError as e:
+            except ValueError:
                 # Fallback if stratified split fails (e.g., too few samples per class)
                 X_tr, y_tr = X_client, y_client
                 X_val_client, y_val_client = X_val, y_val
@@ -136,7 +136,9 @@ def run_exp4_dp_federation(
         global_accuracy = compute_accuracy(y_test, y_pred)
         global_weighted_accuracy = compute_weighted_accuracy(y_test, y_pred, classes)
 
-        avg_client_accuracy = np.mean([r['global_test_metrics']['accuracy'] for r in client_results])
+        avg_client_accuracy = np.mean(
+            [r['global_test_metrics']['accuracy'] for r in client_results]
+        )
         best_client_accuracy = max(r['global_test_metrics']['accuracy'] for r in client_results)
 
         results[epsilon] = {
@@ -151,7 +153,7 @@ def run_exp4_dp_federation(
         }
 
         if verbose:
-            print(f"\n  Federated DP Global RF:")
+            print("\n  Federated DP Global RF:")
             print(f"    Trees: {len(selected_trees)}")
             print(f"    Global accuracy: {global_accuracy:.4f}")
             print(f"    Avg client accuracy: {avg_client_accuracy:.4f}")

@@ -1,66 +1,131 @@
-# Distributed Random Forest — documentation site
-# Build: pip install -e ".[docs]" && mkdocs build
-# Preview: mkdocs serve
+# MkDocs (Material) — documentation site
+# - docs_dir: documentation markdown lives in ./docs
+# - site_dir: build output in ./site (served on GitHub Pages)
+site_name: "Distributed & Federated Random Forest"
+site_url: "https://bowenislandsong.github.io/distributed_random_forest/"
 
-site_name: Distributed Random Forest
-site_description: >-
-  Federated random forest training, tree aggregation, and optional differential
-  privacy.
-site_url: https://bowenislandsong.github.io/distributed_random_forest/
-repo_url: https://github.com/Bowenislandsong/distributed_random_forest
-repo_name: View on GitHub
-edit_uri: edit/main/docs/
+# Match GitHub "edit" links to this repo
+repo_name: "GitHub"
+repo_url: "https://github.com/Bowenislandsong/distributed_random_forest"
+edit_uri: "edit/main/docs/"
 
+# Where Markdown sources live, and where the static site is built
 docs_dir: docs
 site_dir: site
+site_author: "Bowen Song (Bowenislandsong)"
+copyright: "Copyright 2021–2024 Bowen Song"
 
+# --- Theme: Material, teal palette with GitHub and Code Copy buttons
 theme:
-  name: material
+  name: "material"
+  language: "en"
+  font:
+    text: "Roboto"
+    code: "Roboto Mono"
   palette:
     - scheme: default
-      primary: green
-      accent: green
+      primary: "teal"
+      accent: "teal"
       toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
+        icon: "material/brightness-7"
+        name: "Switch to dark mode"
     - scheme: slate
-      primary: green
-      accent: green
+      primary: "teal"
+      accent: "teal"
       toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+        icon: "material/brightness-4"
+        name: "Switch to light mode"
   features:
-    - navigation.sections
     - navigation.expand
+    - navigation.tabs
+    - navigation.sections
+    - navigation.tracking
+    - navigation.path
+    - content.code.annotate
     - content.code.copy
+    - search.suggest
+    - search.highlight
+    - toc.integrate
   icon:
-    repo: fontawesome/brands/github
+    repo: "fontawesome/brands/github"
+  # logo and favicon from Material defaults
 
-nav:
-  - Home: index.md
-  - User guide:
-      - Core concepts: concepts.md
-      - Supported distributed RF patterns: patterns.md
-      - Experiment pipeline: pipeline.md
-      - Getting started: getting-started.md
-      - Code examples: examples.md
-  - Project:
-      - Repository layout: repository.md
-  - License & citation: citing.md
-
+# Common Markdown / syntax extensions
 markdown_extensions:
   - admonition
-  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: "!!material.extensions.emoji.twemoji"
+      emoji_generator: "!!material.extensions.emoji.to_svg"
+  - pymdownx.inlinehilite
   - pymdownx.superfences
-  - tables
+  - pymdownx.snippets
+  - pymdownx.arithmatex
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
   - toc:
       permalink: true
+  - def_list
+  - footnotes
+  - attr_list
+  - md_in_html
+  - pymdownx.tabbed:
+      alternate_style: true
 
 plugins:
   - search
 
+# Site navigation: ordered pages (merge of enterprise layout + project guides)
+nav:
+  - "Home": "index.md"
+  - "Getting started": "getting-started.md"
+  - "How it works": "architecture.md"
+  - "Operations": "operations.md"
+  - "Examples": "examples.md"
+  - "Concepts": "concepts.md"
+  - "Patterns (parallel, DP, sharding)": "patterns.md"
+  - "Pipeline": "pipeline.md"
+  - "Repository & releases": "repository.md"
+  - "Federation strategies & DP": "distributed-strategies.md"
+  - "API (Python)": "api.md"
+  - "License & citation": "citing.md"
+
+# Extra (CSS) under docs/stylesheets/ — use relative file URL for portability
+extra_css:
+  - "stylesheets/extra.css"
+
 extra:
+  # Social links / footer
   social:
-    - icon: fontawesome/solid/rocket
-      link: https://pypi.org/project/distributed-random-forest/
-      name: PyPI
+    - icon: "fontawesome/brands/github"
+      name: "GitHub"
+      link: "https://github.com/Bowenislandsong"
+    - icon: "material/web"
+      name: "Profile"
+      link: "https://bowenislandsong.github.io/#/personal"
+    - icon: "fontawesome/regular/address-card"
+      name: "CV (PDF)"
+      link: "https://bowenislandsong.github.io/img/resume/Bowen_Song_Resume.pdf"
+    - icon: "fontawesome/brands/orcid"
+      name: "ORCID"
+      link: "https://orcid.org/0000-0002-5071-3880"
+  # Version badge (bump in releases)
+  version:
+    provider: mike
+    default: "latest"
+
+# Notes:
+#   - mike (Material versioning) is optional; you can add it later if you want
+#   - deploy from GitHub Actions on push to main (or manual workflow_dispatch)
+
+extra_javascript: []
+
+# mkdocs get-deps / strict mode optional for CI; keep minimal now
+
+# Optional privacy / Google Analytics
+#     analytics:
+#       provider: "google"
+#       property: "G-XXXXXXX"   # or UA- if still using old GA
+
+# Optional: strict mode in CI: `mkdocs build --strict`

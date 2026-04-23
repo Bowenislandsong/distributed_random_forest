@@ -9,16 +9,11 @@ Independent client RFs are merged using 4 strategies:
 
 import numpy as np
 
-from distributed_random_forest.models.random_forest import RandomForest
-from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 from distributed_random_forest.federation.aggregator import (
     aggregate_trees,
-    FederatedAggregator,
-    rf_s_dts_a,
-    rf_s_dts_wa,
-    rf_s_dts_a_all,
-    rf_s_dts_wa_all,
 )
+from distributed_random_forest.models.random_forest import RandomForest
+from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 
 
 def run_exp3_federated_aggregation(
@@ -27,6 +22,7 @@ def run_exp3_federated_aggregation(
     y_val,
     X_test,
     y_test,
+    strategies=None,
     n_trees_per_client=10,
     n_total_trees=100,
     voting='simple',
@@ -41,6 +37,7 @@ def run_exp3_federated_aggregation(
         y_val: Validation labels.
         X_test: Test features.
         y_test: Test labels.
+        strategies: Optional list of aggregation strategies to evaluate.
         n_trees_per_client: Trees to select per client.
         n_total_trees: Total trees for global strategies.
         voting: Voting method for global RF.
@@ -50,13 +47,14 @@ def run_exp3_federated_aggregation(
     Returns:
         dict: Results for all aggregation strategies.
     """
-    strategies = ['rf_s_dts_a', 'rf_s_dts_wa', 'rf_s_dts_a_all', 'rf_s_dts_wa_all']
+    if strategies is None:
+        strategies = ['rf_s_dts_a', 'rf_s_dts_wa', 'rf_s_dts_a_all', 'rf_s_dts_wa_all']
 
     client_trees_list = [client.get_trees() for client in client_rfs]
     classes = client_rfs[0].rf.classes_
 
     if verbose:
-        print(f"\nEXP 3: Federated Aggregation")
+        print("\nEXP 3: Federated Aggregation")
         print(f"Number of clients: {len(client_rfs)}")
         print(f"Total trees across clients: {sum(len(t) for t in client_trees_list)}")
 
@@ -65,11 +63,6 @@ def run_exp3_federated_aggregation(
     for strategy in strategies:
         if verbose:
             print(f"\nTesting strategy: {strategy}")
-
-        if strategy in ['rf_s_dts_a', 'rf_s_dts_wa']:
-            n_param = n_trees_per_client
-        else:
-            n_param = n_total_trees
 
         selected_trees = aggregate_trees(
             client_trees_list,
@@ -104,7 +97,10 @@ def run_exp3_federated_aggregation(
     best_strategy = max(results.keys(), key=lambda s: results[s]['accuracy'])
 
     if verbose:
-        print(f"\nBest strategy: {best_strategy} with accuracy {results[best_strategy]['accuracy']:.4f}")
+        print(
+            f"\nBest strategy: {best_strategy} "
+            f"with accuracy {results[best_strategy]['accuracy']:.4f}"
+        )
 
     return {
         'strategy_results': results,

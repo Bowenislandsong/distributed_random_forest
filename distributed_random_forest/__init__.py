@@ -27,37 +27,54 @@ Example usage:
     global_rf = aggregator.build_global_rf(classes)
 """
 
-from distributed_random_forest.parallelism import resolve_n_jobs
-from distributed_random_forest.models.random_forest import RandomForest, ClientRF
-from distributed_random_forest.models.dp_rf import DPRandomForest, DPClientRF
-from distributed_random_forest.models.tree_utils import (
-    compute_accuracy,
-    compute_weighted_accuracy,
-    compute_f1_score,
-    evaluate_tree,
-    rank_trees_by_metric,
+from distributed_random_forest.distributed import (
+    FederatedRandomForest,
+    FederatedRunReport,
+    create_partitions,
+    partition_by_feature,
+    partition_dirichlet,
+    partition_label_skew,
+    partition_random_with_sizes,
+    partition_stratified,
+    partition_uniform_random,
+    summarize_partitions,
 )
 from distributed_random_forest.federation.aggregator import (
+    AVAILABLE_STRATEGIES,
+    AggregationSummary,
     FederatedAggregator,
     aggregate_trees,
     rf_s_dts_a,
-    rf_s_dts_wa,
     rf_s_dts_a_all,
+    rf_s_dts_wa,
     rf_s_dts_wa_all,
 )
 from distributed_random_forest.federation.voting import (
-    simple_voting,
-    weighted_voting,
     compute_tree_weights_from_accuracy,
     compute_tree_weights_from_weighted_accuracy,
+    simple_voting,
+    weighted_voting,
 )
+from distributed_random_forest.models.dp_rf import DPClientRF, DPRandomForest
+from distributed_random_forest.models.random_forest import ClientRF, RandomForest
+from distributed_random_forest.models.tree_utils import (
+    compute_accuracy,
+    compute_balanced_accuracy,
+    compute_class_distribution,
+    compute_f1_score,
+    compute_weighted_accuracy,
+    evaluate_predictions,
+    evaluate_tree,
+    rank_trees_by_metric,
+)
+from distributed_random_forest.parallelism import resolve_n_jobs
 
 try:
     from importlib.metadata import version
 
     __version__ = version("distributed-random-forest")
 except Exception:  # pragma: no cover
-    __version__ = "0.0.3"
+    __version__ = "0.3.1"
 
 __all__ = [
     "resolve_n_jobs",
@@ -67,12 +84,24 @@ __all__ = [
     "DPRandomForest",
     "DPClientRF",
     # Federation
+    "AggregationSummary",
+    "AVAILABLE_STRATEGIES",
     "FederatedAggregator",
+    "FederatedRandomForest",
+    "FederatedRunReport",
     "aggregate_trees",
     "rf_s_dts_a",
     "rf_s_dts_wa",
     "rf_s_dts_a_all",
     "rf_s_dts_wa_all",
+    "create_partitions",
+    "partition_by_feature",
+    "partition_dirichlet",
+    "partition_label_skew",
+    "partition_random_with_sizes",
+    "partition_stratified",
+    "partition_uniform_random",
+    "summarize_partitions",
     # Voting
     "simple_voting",
     "weighted_voting",
@@ -80,8 +109,11 @@ __all__ = [
     "compute_tree_weights_from_weighted_accuracy",
     # Utilities
     "compute_accuracy",
+    "compute_balanced_accuracy",
+    "compute_class_distribution",
     "compute_weighted_accuracy",
     "compute_f1_score",
     "evaluate_tree",
+    "evaluate_predictions",
     "rank_trees_by_metric",
 ]

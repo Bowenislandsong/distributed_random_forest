@@ -11,102 +11,23 @@ Three data-partitioning strategies:
 import numpy as np
 from sklearn.model_selection import train_test_split
 
+from distributed_random_forest.distributed.partitioning import (
+    create_partitions,
+    partition_by_feature,
+    partition_random_with_sizes,
+    partition_uniform_random,
+)
 from distributed_random_forest.models.random_forest import ClientRF
-from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy
 
-
-def partition_by_feature(X, y, feature_idx, n_partitions=None):
-    """Partition data based on feature values.
-
-    Args:
-        X: Features array.
-        y: Labels array.
-        feature_idx: Index of feature to partition by.
-        n_partitions: Optional number of partitions (uses quantiles).
-
-    Returns:
-        list: List of (X_partition, y_partition) tuples.
-    """
-    X = np.asarray(X)
-    y = np.asarray(y)
-
-    feature_values = X[:, feature_idx]
-
-    if n_partitions is None:
-        unique_values = np.unique(feature_values)
-        partitions = []
-        for val in unique_values:
-            mask = feature_values == val
-            if np.sum(mask) > 0:
-                partitions.append((X[mask], y[mask]))
-    else:
-        quantiles = np.percentile(feature_values, np.linspace(0, 100, n_partitions + 1))
-        partitions = []
-        for i in range(n_partitions):
-            if i == n_partitions - 1:
-                mask = (feature_values >= quantiles[i]) & (feature_values <= quantiles[i + 1])
-            else:
-                mask = (feature_values >= quantiles[i]) & (feature_values < quantiles[i + 1])
-            if np.sum(mask) > 0:
-                partitions.append((X[mask], y[mask]))
-
-    return partitions
-
-
-def partition_uniform_random(X, y, n_clients, random_state=42):
-    """Partition data uniformly at random across clients.
-
-    Args:
-        X: Features array.
-        y: Labels array.
-        n_clients: Number of clients.
-        random_state: Random seed.
-
-    Returns:
-        list: List of (X_partition, y_partition) tuples.
-    """
-    X = np.asarray(X)
-    y = np.asarray(y)
-
-    rng = np.random.default_rng(random_state)
-    indices = rng.permutation(len(X))
-
-    splits = np.array_split(indices, n_clients)
-
-    partitions = []
-    for split_indices in splits:
-        partitions.append((X[split_indices], y[split_indices]))
-
-    return partitions
-
-
-def partition_random_with_sizes(X, y, sizes, random_state=42):
-    """Partition data randomly with specified sizes.
-
-    Args:
-        X: Features array.
-        y: Labels array.
-        sizes: List of sizes for each partition.
-        random_state: Random seed.
-
-    Returns:
-        list: List of (X_partition, y_partition) tuples.
-    """
-    X = np.asarray(X)
-    y = np.asarray(y)
-
-    rng = np.random.default_rng(random_state)
-    indices = rng.permutation(len(X))
-
-    partitions = []
-    start = 0
-    for size in sizes:
-        end = min(start + size, len(indices))
-        split_indices = indices[start:end]
-        partitions.append((X[split_indices], y[split_indices]))
-        start = end
-
-    return partitions
+__all__ = [
+    'partition_by_feature',
+    'partition_uniform_random',
+    'partition_random_with_sizes',
+    'run_exp2_independent_clients',
+    'run_exp2_1_feature_partitioning',
+    'run_exp2_2_uniform_partitioning',
+    'run_exp2_3_sized_partitioning',
+]
 
 
 def run_exp2_independent_clients(
@@ -140,15 +61,18 @@ def run_exp2_independent_clients(
     Returns:
         dict: Results including trained client RFs.
     """
-    if partitioning == 'feature':
-        partitions = partition_by_feature(X_train, y_train, feature_idx, n_clients)
-    elif partitioning == 'uniform':
-        partitions = partition_uniform_random(X_train, y_train, n_clients, random_state)
-    elif partitioning == 'sized':
+    if partitioning == 'sized':
         sizes = [len(X_train) // n_clients] * n_clients
         partitions = partition_random_with_sizes(X_train, y_train, sizes, random_state)
     else:
-        raise ValueError(f"Unknown partitioning: {partitioning}")
+        partitions = create_partitions(
+            X_train,
+            y_train,
+            strategy=partitioning,
+            n_clients=n_clients,
+            random_state=random_state,
+            feature_idx=feature_idx,
+        )
 
     if verbose:
         print(f"\nEXP 2: Training {len(partitions)} clients with {partitioning} partitioning")
@@ -193,7 +117,10 @@ def run_exp2_independent_clients(
     avg_accuracy = np.mean([r['global_test_metrics']['accuracy'] for r in client_results])
 
     if verbose:
-        print(f"\nBest client: {best_client_idx} with accuracy {client_results[best_client_idx]['global_test_metrics']['accuracy']:.4f}")
+        print(
+            f"\nBest client: {best_client_idx} with accuracy "
+            f"{client_results[best_client_idx]['global_test_metrics']['accuracy']:.4f}"
+        )
         print(f"Average accuracy: {avg_accuracy:.4f}")
 
     return {

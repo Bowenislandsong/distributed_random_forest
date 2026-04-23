@@ -8,12 +8,16 @@ Grid search over:
 The best configuration is used for all remaining experiments.
 """
 
-import numpy as np
 from itertools import product
+
 from sklearn.model_selection import train_test_split
 
 from distributed_random_forest.models.random_forest import RandomForest
-from distributed_random_forest.models.tree_utils import compute_accuracy, compute_weighted_accuracy, compute_f1_score
+from distributed_random_forest.models.tree_utils import (
+    compute_accuracy,
+    compute_f1_score,
+    compute_weighted_accuracy,
+)
 
 
 def run_exp1_hyperparameter_selection(
@@ -104,7 +108,7 @@ def run_exp1_hyperparameter_selection(
             best_rf = rf
 
     if verbose:
-        print(f"\nBest parameters found:")
+        print("\nBest parameters found:")
         print(f"  n_estimators: {best_params['n_estimators']}")
         print(f"  criterion: {best_params['criterion']}")
         print(f"  voting: {best_params['voting']}")

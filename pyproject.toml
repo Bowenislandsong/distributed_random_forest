@@ -4,29 +4,34 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "distributed-random-forest"
-version = "0.0.3"
-description = "Distributed/Federated Random Forest framework with Differential Privacy support"
+version = "0.3.1"
+description = "Enterprise-ready distributed and federated Random Forests with orchestration, strategy search, and optional differential privacy"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
-    {name = "Bowenislandsong"}
+    { name = "Bowen Song" }
+]
+maintainers = [
+    { name = "Bowen Song" }
 ]
 keywords = [
     "machine-learning",
     "random-forest",
     "federated-learning",
     "differential-privacy",
-    "distributed-computing"
+    "distributed-computing",
+    "health-ai",
+    "explainable-ai",
+    "scalable-ml-systems",
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -34,28 +39,43 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "numpy>=1.21.0",
-    "scikit-learn>=1.0.0",
+    "numpy>=1.23.0",
+    "scikit-learn>=1.3.0",
     "joblib>=1.2.0",
     "pandas>=1.3.0",
     "diffprivlib>=0.6.0",
 ]
 
+[project.scripts]
+drf-quickstart = "distributed_random_forest.cli:main"
+
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "build>=1.2.2",
+    "pytest>=8.2.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.11.0",
+    "twine>=6.1.0",
 ]
 docs = [
-    "mkdocs>=1.5.0",
+    "mkdocs>=1.6.0",
     "mkdocs-material>=9.5.0",
+    "pymdown-extensions>=10.0",
+]
+privacy = [
+    "diffprivlib>=0.6.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/Bowenislandsong/distributed_random_forest"
-Documentation = "https://bowenislandsong.github.io/distributed_random_forest/"
+Homepage = "https://bowenislandsong.github.io/#/personal"
+Author = "https://bowenislandsong.github.io/#/personal"
+Personal_Site = "https://bowenislandsong.github.io/#/personal"
+CV = "https://bowenislandsong.github.io/img/resume/Bowen_Song_Resume.pdf"
+ORCID = "https://orcid.org/0000-0002-5071-3880"
 Repository = "https://github.com/Bowenislandsong/distributed_random_forest"
 Issues = "https://github.com/Bowenislandsong/distributed_random_forest/issues"
+Documentation = "https://bowenislandsong.github.io/distributed_random_forest/"
+Changelog = "https://github.com/Bowenislandsong/distributed_random_forest/releases"
 
 [tool.setuptools.packages.find]
 include = ["distributed_random_forest*"]
@@ -69,8 +89,20 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 markers = [
-    "performance: accuracy/latency bounds on public or synthetic data (CI-safe)",
-    "e2e: end-to-end or integration-style path",
-    "parallel_parity: n_jobs=1 vs n_jobs=-1 should match (determinism checks)",
-    "stress: larger client/tree counts; still CI-safe with loose time bounds",
+    "performance: accuracy/latency or determinism (CI-safe bounds)",
+    "e2e: end-to-end or integration path",
+    "parallel_parity: n_jobs=1 vs n_jobs=-1 should match",
+    "stress: larger client/tree counts; loose time bounds",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
 ]

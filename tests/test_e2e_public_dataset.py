@@ -4,8 +4,8 @@ import pytest
 
 from distributed_random_forest import (
     ClientRF,
-    DPRandomForest,
     DPClientRF,
+    DPRandomForest,
     FederatedAggregator,
 )
 from distributed_random_forest.datasets import load_breast_cancer_bench

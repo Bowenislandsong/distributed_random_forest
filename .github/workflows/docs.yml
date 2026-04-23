@@ -1,4 +1,4 @@
-name: Documentation
+name: Docs
 
 on:
   push:
@@ -21,8 +21,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -33,17 +33,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install docs dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[docs]"
+          python -m pip install -e ".[docs]"
 
-      - name: Build site
-        run: mkdocs build --strict
+      - name: Build docs
+        run: python -m mkdocs build --strict
 
       - name: Upload Pages artifact
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
@@ -52,9 +53,6 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

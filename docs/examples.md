@@ -109,7 +109,7 @@ for i, (Xc, yc) in enumerate(partitions):
 
 ag = FederatedAggregator(strategy="rf_s_dts_a", n_trees_per_client=12)
 ag.aggregate(clients, X_val, y_val)
-ag.build_global_rf(clients[0].rf._classes)
+ag.build_global_rf(clients[0].rf.classes_)
 metrics = ag.evaluate(X_test, y_test)
 print(f"Global test accuracy: {metrics['accuracy']:.4f}")
 ```
@@ -185,3 +185,47 @@ print("Best accuracy:", f"{results['best_accuracy']:.4f}")
 - **Example script smoke:** `tests/test_examples_run.py` (runs `examples/benchmark_public_dataset.py --quick` in a subprocess)
 
 See [Getting started](getting-started.md) for the full `pytest` command line.
+
+## Included script examples
+
+The repository ships with runnable examples in
+[the `examples/` directory](https://github.com/Bowenislandsong/distributed_random_forest/tree/main/examples).
+
+- **`basic_federated_training.py`** — centralized data, uniform client partitioning, automatic strategy selection.
+- **`non_iid_dirichlet.py`** — Dirichlet non-IID client simulation plus explicit report export.
+- **`dp_enterprise_workflow.py`** — differentially private client training with balanced aggregation and JSON output.
+- **`performance_benchmark.py`** — reproducible benchmark used for the README and docs performance snapshot.
+
+## Example use cases
+
+### Network intrusion detection
+
+Different sites collect different traffic mixes. Use `dirichlet` or `label_skew`
+partitioning to simulate realistic heterogeneity, then compare `rf_s_dts_wa_all`
+and `top_k_global_balanced_accuracy`.
+
+### Multi-branch fraud scoring
+
+Branches may differ dramatically in volume. Use `sized` partitioning and
+`proportional_weighted_accuracy` aggregation to preserve stronger representation
+from high-volume sites without ignoring smaller branches.
+
+### Privacy-constrained healthcare classification
+
+Enable DP mode with `use_differential_privacy=True` and track the privacy/utility
+trade-off across `epsilon` values.
+
+## Running packaged examples
+
+```bash
+python examples/basic_federated_training.py
+python examples/non_iid_dirichlet.py
+python examples/dp_enterprise_workflow.py
+python examples/performance_benchmark.py
+```
+
+## Quick CLI demo
+
+```bash
+drf-quickstart --clients 5 --partition-strategy dirichlet --alpha 0.4
+```
