@@ -3,9 +3,11 @@
 from dataclasses import dataclass, field
 
 import numpy as np
+from joblib import Parallel, delayed
 
 from distributed_random_forest.models.random_forest import RandomForest
 from distributed_random_forest.models.tree_utils import evaluate_predictions, evaluate_tree
+from distributed_random_forest.parallelism import resolve_n_jobs
 
 LEGACY_STRATEGIES = {
     'rf_s_dts_a': ('top_k_per_client', 'accuracy'),
@@ -75,25 +77,44 @@ def _resolve_strategy(strategy):
     return AVAILABLE_STRATEGIES[strategy]
 
 
-def _score_client_trees(client_trees_list, X_val, y_val, classes=None, client_sample_counts=None):
-    """Evaluate all candidate trees on a common validation set."""
-    scored = []
-    client_sample_counts = client_sample_counts or [0] * len(client_trees_list)
+def _one_scored_tree(client_id, tree_id, tree, X_val, y_val, classes, sample_count):
+    """Module-level for :class:`joblib.Parallel` (picklable)."""
+    return ScoredTree(
+        tree=tree,
+        client_id=client_id,
+        tree_id=tree_id,
+        metrics=evaluate_tree(tree, X_val, y_val, classes),
+        client_sample_count=sample_count,
+    )
 
+
+def _score_client_trees(
+    client_trees_list,
+    X_val,
+    y_val,
+    classes=None,
+    client_sample_counts=None,
+    n_jobs=-1,
+):
+    """Evaluate all candidate trees on a common validation set."""
+    client_sample_counts = client_sample_counts or [0] * len(client_trees_list)
+    work = []
     for client_id, client_trees in enumerate(client_trees_list):
         sample_count = client_sample_counts[client_id]
         for tree_id, tree in enumerate(client_trees):
-            scored.append(
-                ScoredTree(
-                    tree=tree,
-                    client_id=client_id,
-                    tree_id=tree_id,
-                    metrics=evaluate_tree(tree, X_val, y_val, classes),
-                    client_sample_count=sample_count,
-                )
-            )
+            work.append((client_id, tree_id, tree, sample_count))
 
-    return scored
+    n_workers = resolve_n_jobs(n_jobs)
+    if n_workers <= 1 or len(work) <= 1:
+        return [
+            _one_scored_tree(cid, tid, t, X_val, y_val, classes, sc)
+            for cid, tid, t, sc in work
+        ]
+
+    return Parallel(n_jobs=n_workers)(
+        delayed(_one_scored_tree)(cid, tid, t, X_val, y_val, classes, sc)
+        for cid, tid, t, sc in work
+    )
 
 
 def _sort_scored_trees(scored_trees, metric):
@@ -264,7 +285,7 @@ def _select_scored_trees(
     return selected, selection_mode, metric
 
 
-def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
+def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None, n_jobs=-1):
     """RF_S_DTs_A: sort trees by validation accuracy within each client."""
     return aggregate_trees(
         client_trees_list,
@@ -273,10 +294,11 @@ def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None
         strategy='rf_s_dts_a',
         n_trees_per_client=n_trees_per_client,
         classes=classes,
+        n_jobs=n_jobs,
     )
 
 
-def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
+def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=None, n_jobs=-1):
     """RF_S_DTs_WA: sort trees by weighted accuracy within each client."""
     return aggregate_trees(
         client_trees_list,
@@ -285,10 +307,11 @@ def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=Non
         strategy='rf_s_dts_wa',
         n_trees_per_client=n_trees_per_client,
         classes=classes,
+        n_jobs=n_jobs,
     )
 
 
-def rf_s_dts_a_all(client_trees_list, X_val, y_val, n_total_trees, classes=None):
+def rf_s_dts_a_all(client_trees_list, X_val, y_val, n_total_trees, classes=None, n_jobs=-1):
     """RF_S_DTs_A_All: sort all trees globally by validation accuracy."""
     return aggregate_trees(
         client_trees_list,
@@ -297,10 +320,11 @@ def rf_s_dts_a_all(client_trees_list, X_val, y_val, n_total_trees, classes=None)
         strategy='rf_s_dts_a_all',
         n_total_trees=n_total_trees,
         classes=classes,
+        n_jobs=n_jobs,
     )
 
 
-def rf_s_dts_wa_all(client_trees_list, X_val, y_val, n_total_trees, classes=None):
+def rf_s_dts_wa_all(client_trees_list, X_val, y_val, n_total_trees, classes=None, n_jobs=-1):
     """RF_S_DTs_WA_All: sort all trees globally by weighted accuracy."""
     return aggregate_trees(
         client_trees_list,
@@ -309,6 +333,7 @@ def rf_s_dts_wa_all(client_trees_list, X_val, y_val, n_total_trees, classes=None
         strategy='rf_s_dts_wa_all',
         n_total_trees=n_total_trees,
         classes=classes,
+        n_jobs=n_jobs,
     )
 
 
@@ -323,6 +348,7 @@ def aggregate_trees(
     min_score=None,
     client_sample_counts=None,
     return_summary=False,
+    n_jobs=-1,
 ):
     """Aggregate trees from multiple clients using the specified strategy.
 
@@ -337,6 +363,8 @@ def aggregate_trees(
         min_score: Minimum metric value for threshold strategies.
         client_sample_counts: Optional client sample counts.
         return_summary: Whether to return a structured ``AggregationSummary``.
+        n_jobs: Parallel workers for per-tree validation scoring; see
+            :func:`distributed_random_forest.parallelism.resolve_n_jobs`.
 
     Returns:
         list | tuple: Selected trees, optionally paired with a summary.
@@ -347,6 +375,7 @@ def aggregate_trees(
         y_val,
         classes=classes,
         client_sample_counts=client_sample_counts,
+        n_jobs=n_jobs,
     )
     selected, selection_mode, metric = _select_scored_trees(
         scored_trees,
@@ -384,12 +413,14 @@ class FederatedAggregator:
         n_trees_per_client=10,
         n_total_trees=100,
         min_score=None,
+        n_jobs=-1,
     ):
         """Initialize the aggregator."""
         self.strategy = strategy
         self.n_trees_per_client = n_trees_per_client
         self.n_total_trees = n_total_trees
         self.min_score = min_score
+        self.n_jobs = n_jobs
         self.global_trees = None
         self.global_rf = None
         self.summary = None
@@ -410,6 +441,7 @@ class FederatedAggregator:
             min_score=self.min_score,
             client_sample_counts=client_sample_counts,
             return_summary=True,
+            n_jobs=self.n_jobs,
         )
         return self.global_trees
 
@@ -418,7 +450,7 @@ class FederatedAggregator:
         if self.global_trees is None:
             raise RuntimeError("No aggregated trees available. Call aggregate() first.")
 
-        self.global_rf = RandomForest(voting=voting)
+        self.global_rf = RandomForest(voting=voting, n_jobs=self.n_jobs)
         self.global_rf.set_trees(self.global_trees, classes)
         return self.global_rf
 

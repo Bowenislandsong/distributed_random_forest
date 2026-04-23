@@ -41,6 +41,9 @@ classifiers = [
 dependencies = [
     "numpy>=1.23.0",
     "scikit-learn>=1.3.0",
+    "joblib>=1.2.0",
+    "pandas>=1.3.0",
+    "diffprivlib>=0.6.0",
 ]
 
 [project.scripts]
@@ -57,6 +60,7 @@ dev = [
 docs = [
     "mkdocs>=1.6.0",
     "mkdocs-material>=9.5.0",
+    "pymdown-extensions>=10.0",
 ]
 privacy = [
     "diffprivlib>=0.6.0",
@@ -84,6 +88,12 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "performance: accuracy/latency or determinism (CI-safe bounds)",
+    "e2e: end-to-end or integration path",
+    "parallel_parity: n_jobs=1 vs n_jobs=-1 should match",
+    "stress: larger client/tree counts; loose time bounds",
+]
 
 [tool.ruff]
 line-length = 100

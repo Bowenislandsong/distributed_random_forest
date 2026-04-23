@@ -7,6 +7,8 @@
   </p>
 </div>
 
+**Federated and distributed [Random Forest](https://en.wikipedia.org/wiki/Random_forest) training** with **optional differential privacy**, inspired by work on *Random Forest with Differential Privacy in Federated Learning for Network Attack Detection*.
+
 ## Why This Project Exists
 
 Most "distributed random forest" repos stop at "train a few local forests and concatenate trees."
@@ -63,7 +65,7 @@ useful for reproducible experiments, demos, and real engineering evaluation.
 ## Performance Snapshot
 
 Single-run local benchmark on a synthetic 4-class dataset. Reproduce with
-`python examples/performance_benchmark.py`.
+`python examples/performance_benchmark.py` (when the script is present in the repo).
 
 | Scenario | Accuracy | Time (s) | Strategy |
 | --- | ---: | ---: | --- |
@@ -72,7 +74,15 @@ Single-run local benchmark on a synthetic 4-class dataset. Reproduce with
 | Federated dirichlet | 0.7642 | 1.42 | `proportional_weighted_accuracy` |
 | Federated dirichlet + DP | 0.5125 | 0.74 | `top_k_global_balanced_accuracy` |
 
-## Quick Install
+## Guides
+
+1. [Core concepts](concepts.md) — splits, voting, tree aggregation, and metrics.
+2. [Patterns (parallel, DP, sharding)](patterns.md) — `n_jobs`, data partitioning, aggregation strategies, and DP layout.
+3. [Experiment pipeline](pipeline.md) — how EXP 1–4 are organized.
+4. [Getting started](getting-started.md) — install, run experiments, and tests.
+5. [Code examples](examples.md) — copy-paste training and federated patterns.
+
+## Quick install
 
 ```bash
 pip install distributed-random-forest
@@ -86,21 +96,35 @@ cd distributed_random_forest
 python -m pip install -e ".[dev,docs]"
 ```
 
-## Fastest Way To Try It
+## Fastest way to try it
 
 ```bash
 drf-quickstart --clients 4 --partition-strategy dirichlet --backend thread
 ```
 
-## Core Building Blocks
+## Build this documentation locally
+
+```bash
+pip install -e ".[docs]"
+mkdocs serve
+```
+
+Then open the URL printed in the terminal (usually `http://127.0.0.1:8000`).
+
+## Core building blocks
 
 - `RandomForest` and `DPRandomForest` for local training.
 - `ClientRF` and `DPClientRF` for client-scoped model ownership and metrics.
 - `FederatedAggregator` for explicit tree selection strategies.
 - `FederatedRandomForest` for end-to-end orchestration, validation, and reporting.
 
-## Next Steps
+## Next steps
 
-- Follow [Getting Started](getting-started.md) for installation and a first training run.
-- Read [Distributed Strategies](distributed-strategies.md) to choose partitioning and aggregation.
+- Follow [Getting started](getting-started.md) for installation and a first training run.
+- Read [Distributed strategies & DP](distributed-strategies.md) to choose partitioning and aggregation.
 - Use [Operations](operations.md) to enable CI, release publishing, and GitHub Pages deployment.
+
+## Links
+
+- **PyPI:** [distributed-random-forest](https://pypi.org/project/distributed-random-forest/)
+- **Source:** [GitHub](https://github.com/Bowenislandsong/distributed_random_forest)

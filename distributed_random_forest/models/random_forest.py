@@ -3,6 +3,7 @@
 import pickle
 
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.ensemble import RandomForestClassifier
 
 from distributed_random_forest.federation.voting import simple_voting, weighted_voting
@@ -13,6 +14,31 @@ from distributed_random_forest.models.tree_utils import (
     compute_weighted_accuracy,
     evaluate_predictions,
 )
+from distributed_random_forest.parallelism import resolve_n_jobs
+
+
+def _tree_predict_mapped(tree, X, classes):
+    """For :class:`joblib.Parallel` across trees (module-level, picklable)."""
+    preds = tree.predict(X)
+    if classes is not None and hasattr(tree, 'classes_'):
+        preds = _map_tree_predictions(preds, tree.classes_, classes)
+    return preds
+
+
+def _tree_proba_mapped(tree, X, target_classes):
+    """Per-tree proba, aligned to ``target_classes`` (picklable for :class:`joblib.Parallel`)."""
+    p = tree.predict_proba(X)
+    if target_classes is not None and hasattr(tree, 'classes_'):
+        p = _map_tree_probabilities(p, tree.classes_, target_classes)
+    return p
+
+
+def _tree_wa_for_weight(tree, X_val, y_val, classes):
+    """One tree’s weighted accuracy on validation (for weight vector)."""
+    y_pred = tree.predict(X_val)
+    if classes is not None and hasattr(tree, 'classes_'):
+        y_pred = _map_tree_predictions(y_pred, tree.classes_, classes)
+    return max(compute_weighted_accuracy(y_val, y_pred, classes), 1e-6)
 
 
 class RandomForest:
@@ -24,6 +50,8 @@ class RandomForest:
         voting: Voting method ('simple' or 'weighted').
         max_depth: Maximum depth of trees.
         random_state: Random seed for reproducibility.
+        n_jobs: Parallel workers (sklearn training, per-tree weighting, and
+            merged-tree prediction; ``-1`` = all CPUs, ``1`` = sequential).
     """
 
     def __init__(
@@ -35,6 +63,7 @@ class RandomForest:
         min_samples_split=2,
         min_samples_leaf=1,
         random_state=None,
+        n_jobs=-1,
     ):
         """Initialize Random Forest.
 
@@ -46,6 +75,7 @@ class RandomForest:
             min_samples_split: Minimum samples required to split a node.
             min_samples_leaf: Minimum samples required at a leaf node.
             random_state: Random seed for reproducibility.
+            n_jobs: See :func:`distributed_random_forest.parallelism.resolve_n_jobs`.
         """
         self.n_estimators = n_estimators
         self.criterion = criterion
@@ -54,6 +84,7 @@ class RandomForest:
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.random_state = random_state
+        self.n_jobs = n_jobs
 
         self._forest = None
         self._trees = []
@@ -90,7 +121,7 @@ class RandomForest:
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             random_state=self.random_state,
-            n_jobs=-1,
+            n_jobs=resolve_n_jobs(self.n_jobs),
         )
         self._forest.fit(X, y)
         self._trees = list(self._forest.estimators_)
@@ -116,14 +147,17 @@ class RandomForest:
             X_val: Validation features.
             y_val: Validation labels.
         """
-        weights = []
-        for tree in self._trees:
-            y_pred = tree.predict(X_val)
-            # Map tree predictions to original class labels if needed
-            if self._classes is not None and hasattr(tree, 'classes_'):
-                y_pred = _map_tree_predictions(y_pred, tree.classes_, self._classes)
-            wa = compute_weighted_accuracy(y_val, y_pred, self._classes)
-            weights.append(max(wa, 1e-6))
+        n_workers = resolve_n_jobs(self.n_jobs)
+        if n_workers <= 1 or len(self._trees) <= 1:
+            weights = [
+                _tree_wa_for_weight(t, X_val, y_val, self._classes)
+                for t in self._trees
+            ]
+        else:
+            weights = Parallel(n_jobs=n_workers)(
+                delayed(_tree_wa_for_weight)(t, X_val, y_val, self._classes)
+                for t in self._trees
+            )
 
         self._tree_weights = np.array(weights)
         self._tree_weights /= self._tree_weights.sum()
@@ -147,6 +181,19 @@ class RandomForest:
             return self._simple_voting(X)
         return self._weighted_voting(X)
 
+    def _stack_tree_predictions(self, X):
+        """Shape (n_trees, n_samples) of class labels (mapped to ``self._classes``)."""
+        n_workers = resolve_n_jobs(self.n_jobs)
+        if n_workers <= 1 or len(self._trees) <= 1:
+            return np.array(
+                [_tree_predict_mapped(t, X, self._classes) for t in self._trees]
+            )
+        return np.array(
+            Parallel(n_jobs=n_workers)(
+                delayed(_tree_predict_mapped)(t, X, self._classes) for t in self._trees
+            )
+        )
+
     def _simple_voting(self, X):
         """Perform simple majority voting.
 
@@ -156,15 +203,7 @@ class RandomForest:
         Returns:
             ndarray: Predicted labels via majority vote.
         """
-        all_preds = []
-        for tree in self._trees:
-            preds = tree.predict(X)
-            # Map tree predictions to original class labels if needed
-            if self._classes is not None and hasattr(tree, 'classes_'):
-                preds = _map_tree_predictions(preds, tree.classes_, self._classes)
-            all_preds.append(preds)
-
-        predictions = np.array(all_preds)
+        predictions = self._stack_tree_predictions(X)
         return simple_voting(predictions, self._classes)
 
     def _weighted_voting(self, X):
@@ -176,14 +215,8 @@ class RandomForest:
         Returns:
             ndarray: Predicted labels via weighted vote.
         """
-        predictions = []
-        for tree in self._trees:
-            preds = tree.predict(X)
-            if self._classes is not None and hasattr(tree, 'classes_'):
-                preds = _map_tree_predictions(preds, tree.classes_, self._classes)
-            predictions.append(preds)
-
-        return weighted_voting(np.array(predictions), self._tree_weights, self._classes)
+        predictions = self._stack_tree_predictions(X)
+        return weighted_voting(predictions, self._tree_weights, self._classes)
 
     def predict_proba(self, X):
         """Predict class probabilities for samples.
@@ -200,18 +233,19 @@ class RandomForest:
             return self._forest.predict_proba(X)
 
         n_samples = X.shape[0]
-        proba = np.zeros((n_samples, len(self._classes)))
-
-        for tree_idx, tree in enumerate(self._trees):
-            tree_proba = tree.predict_proba(X)
-            if self._classes is not None and hasattr(tree, 'classes_'):
-                tree_proba = _map_tree_probabilities(
-                    tree_proba,
-                    tree.classes_,
-                    self._classes,
-                )
-            weight = self._tree_weights[tree_idx]
-            proba += weight * tree_proba
+        n_workers = resolve_n_jobs(self.n_jobs)
+        if n_workers <= 1 or len(self._trees) <= 1:
+            proba = np.zeros((n_samples, len(self._classes)))
+            for tree_idx, tree in enumerate(self._trees):
+                tree_proba = _tree_proba_mapped(tree, X, self._classes)
+                proba += self._tree_weights[tree_idx] * tree_proba
+        else:
+            all_proba = Parallel(n_jobs=n_workers)(
+                delayed(_tree_proba_mapped)(t, X, self._classes) for t in self._trees
+            )
+            proba = np.zeros((n_samples, len(self._classes)))
+            for tree_idx, tree_proba in enumerate(all_proba):
+                proba += self._tree_weights[tree_idx] * tree_proba
 
         total_weight = np.sum(self._tree_weights)
         if total_weight > 0:

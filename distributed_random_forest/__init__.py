@@ -21,8 +21,8 @@ Example usage:
     client = ClientRF(client_id=0, rf_params={'n_estimators': 20})
     client.train(X_client, y_client)
 
-    # Aggregate trees from multiple clients
-    aggregator = FederatedAggregator(strategy='rf_s_dts_a')
+    # Aggregate trees from multiple clients (n_jobs=-1 uses all CPU cores for scoring)
+    aggregator = FederatedAggregator(strategy='rf_s_dts_a', n_jobs=-1)
     aggregator.aggregate(clients, X_val, y_val)
     global_rf = aggregator.build_global_rf(classes)
 """
@@ -67,10 +67,17 @@ from distributed_random_forest.models.tree_utils import (
     evaluate_tree,
     rank_trees_by_metric,
 )
+from distributed_random_forest.parallelism import resolve_n_jobs
 
-__version__ = "0.2.0"
+try:
+    from importlib.metadata import version
+
+    __version__ = version("distributed-random-forest")
+except Exception:  # pragma: no cover
+    __version__ = "0.3.1"
 
 __all__ = [
+    "resolve_n_jobs",
     # Core models
     "RandomForest",
     "ClientRF",

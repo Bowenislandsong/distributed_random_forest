@@ -177,3 +177,16 @@ class TestRankTreesByMetric:
         
         scores = [score for _, score in ranked]
         assert scores == sorted(scores, reverse=True)
+
+    def test_parallel_n_jobs_same_scores_as_sequential(self, multiple_trees):
+        """n_jobs=1 and n_jobs=-1 should yield the same sorted scores (tie-safe)."""
+        trees, X, y = multiple_trees
+        a = rank_trees_by_metric(
+            trees, X, y, metric='accuracy', n_jobs=1
+        )
+        b = rank_trees_by_metric(
+            trees, X, y, metric='accuracy', n_jobs=-1
+        )
+        sa = [s for _, s in a]
+        sb = [s for _, s in b]
+        assert sa == sb
