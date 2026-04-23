@@ -89,6 +89,7 @@ nav:
   - "Repository & releases": "repository.md"
   - "Federation strategies & DP": "distributed-strategies.md"
   - "API (Python)": "api.md"
+  - "Changelog": "changelog.md"
   - "License & citation": "citing.md"
 
 # Extra (CSS) under docs/stylesheets/ — use relative file URL for portability
