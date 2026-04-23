@@ -14,6 +14,7 @@ import pytest
 from distributed_random_forest import ClientRF, FederatedAggregator, RandomForest
 from distributed_random_forest.datasets import load_breast_cancer_bench
 from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
+from tests.timing import max_per_sample_seconds, max_wall_seconds
 
 pytestmark = pytest.mark.performance
 
@@ -46,9 +47,11 @@ class TestPublicDatasetPerformance:
         rf.predict(split.X_test)
         dt = time.perf_counter() - t0
         n = len(split.X_test)
-        assert dt < 2.0, f"full-batch predict too slow: {dt:.2f}s for n={n}"
+        assert dt < max_wall_seconds(2.0), f"full-batch predict too slow: {dt:.2f}s for n={n}"
         per_sample = dt / n
-        assert per_sample < 0.01, f"per-sample predict too slow: {per_sample*1000:.1f} ms"
+        assert per_sample < max_per_sample_seconds(0.01), (
+            f"per-sample predict too slow: {per_sample*1000:.1f} ms"
+        )
 
     def test_federated_global_accuracy(self, breast_cancer_split) -> None:
         split = breast_cancer_split
@@ -88,7 +91,7 @@ class TestPublicDatasetPerformance:
         t0 = time.perf_counter()
         ag.global_rf.predict(split.X_test)
         dt = time.perf_counter() - t0
-        assert dt < 3.0, f"global predict {dt:.2f}s for n={len(split.y_test)}"
+        assert dt < max_wall_seconds(3.0), f"global predict {dt:.2f}s for n={len(split.y_test)}"
 
 
 class TestNJobsPredictDeterminism:
@@ -134,4 +137,4 @@ class TestArrayAllocationOverhead:
         for _ in range(50):
             p = rf.predict(Xte)
             assert p.shape == (len(yte),)
-        assert time.perf_counter() - t0 < 2.0
+        assert time.perf_counter() - t0 < max_wall_seconds(2.0)

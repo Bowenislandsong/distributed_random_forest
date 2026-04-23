@@ -16,6 +16,7 @@ from distributed_random_forest import ClientRF, FederatedAggregator, RandomFores
 from distributed_random_forest.datasets import load_breast_cancer_bench
 from distributed_random_forest.experiments.exp2_clients import partition_uniform_random
 from distributed_random_forest.models.tree_utils import rank_trees_by_metric
+from tests.timing import max_wall_seconds
 
 pytestmark = pytest.mark.stress
 
@@ -67,7 +68,7 @@ class TestScaleManyClientsAndTrees:
         a.build_global_rf(clients[0].rf._classes)
         m = a.evaluate(X_te, y_te)
         wall = time.perf_counter() - t0
-        assert wall < 60.0, f"aggregation too slow: {wall:.1f}s"
+        assert wall < max_wall_seconds(60.0), f"aggregation too slow: {wall:.1f}s"
         assert 0.0 < m["accuracy"] <= 1.0
         assert len(a.global_trees) == 48
 
@@ -108,7 +109,7 @@ class TestScaleManyClientsAndTrees:
             metric="weighted_accuracy",
             n_jobs=-1,
         )
-        assert time.perf_counter() - t0 < 45.0
+        assert time.perf_counter() - t0 < max_wall_seconds(45.0)
         assert len(ranked) == len(all_trees)
         accs = [s for _, s in ranked]
         assert accs == sorted(accs, reverse=True)
@@ -136,5 +137,5 @@ class TestCentralRFLarge:
             split.y_val,
         )
         s = rf.score(split.X_test, split.y_test)
-        assert time.perf_counter() - t0 < 30.0
+        assert time.perf_counter() - t0 < max_wall_seconds(30.0)
         assert 0.85 < s <= 1.0
