@@ -28,7 +28,8 @@ The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **GitHub 
 
 1. In the GitHub repository: **Settings → Secrets and variables → Actions**, add **`PYPI_ALL`** with the token value (`pypi-…`).
 2. On PyPI, ensure the `distributed-random-forest` project exists and the token is scoped to that project (or the whole account, if you use a user-wide token with care).
-3. Cut a [GitHub release](https://github.com/Bowenislandsong/distributed_random_forest/releases) (tag like `v0.4.0`); the workflow uploads the artifacts built from that ref.
+3. Tag the release commit and push the tag, for example: `git tag v0.4.0` and `git push origin v0.4.0`. The **Publish** workflow runs on that tag and uploads sdist and wheel to PyPI.
+4. (Optional) Add a [GitHub Release](https://github.com/Bowenislandsong/distributed_random_forest/releases) for the same tag for release notes in the web UI. Use **Releases → Draft a new release**, pick the tag, and publish (this does not need to re-upload to PyPI).
 
 The canonical list of what changed in each version is in [`CHANGELOG.md`](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/CHANGELOG.md) and on the docs site under **Changelog**.
 

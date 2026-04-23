@@ -1,15 +1,15 @@
-# Publish the built sdist/wheel to PyPI when a GitHub Release is published.
+# PyPI: upload when a version tag (v*) is pushed. This avoids a second upload
+# when you later add a “GitHub Release” from the same tag.
 #
-# Configure a repository (or environment) secret named PYPI_ALL containing a
-# PyPI API token (username on PyPI is always __token__; the action sets this
-# when publishing with a token).
-#
+# Secret: add PYPI_ALL (PyPI API token) in repo Actions secrets.
 # https://github.com/pypa/gh-action-pypi-publish
 name: Publish
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: read
