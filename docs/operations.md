@@ -24,7 +24,7 @@ to `main` (and on manual dispatch).
 
 ## PyPI Publishing
 
-The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **GitHub Release is published**. It builds an sdist and wheel, then uploads to PyPI using the repository secret **`PYPI_ALL`** (a [PyPI API token](https://pypi.org/manage/account/token/); the workflow uses the username `__token__`).
+The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **version tag** `v*` is pushed (or on manual `workflow_dispatch`). It builds an sdist and wheel, then uploads to PyPI using the repository secret **`PYPI_ALL`** (a [PyPI API token](https://pypi.org/manage/account/token/); the workflow uses the username `__token__`). The workflow sets **`attestations: false`** on the uploader, because [digital attestations](https://github.com/pypa/gh-action-pypi-publish#generating-and-uploading-attestations) require *Trusted Publishing* (OIDC), not a static token.
 
 1. In the GitHub repository: **Settings → Secrets and variables → Actions**, add **`PYPI_ALL`** with the token value (`pypi-…`).
 2. On PyPI, ensure the `distributed-random-forest` project exists and the token is scoped to that project (or the whole account, if you use a user-wide token with care).
