@@ -46,6 +46,15 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Check PyPI token is configured
+        run: |
+          if [ -z "$PYPI_TOKEN" ]; then
+            echo '::error::Add repository secret PYPI_ALL (PyPI API token from https://pypi.org/manage/account/token/)'
+            exit 1
+          fi
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_ALL }}
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -55,7 +64,7 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
+          user: "__token__"
           password: ${{ secrets.PYPI_ALL }}
           # Attestations (PEP 740) require Trusted Publishing (OIDC + id-token: write),
           # not a static API token. Keep off when using PYPI_ALL.
