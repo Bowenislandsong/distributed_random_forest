@@ -4,7 +4,9 @@ import numpy as np
 from distributed_random_forest.models.tree_utils import evaluate_tree, rank_trees_by_metric
 from distributed_random_forest.models.random_forest import RandomForest
 
-def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
+def rf_s_dts_a(
+    client_trees_list, X_val, y_val, n_trees_per_client, classes=None, n_jobs=None
+):
     """RF_S_DTs_A: Sort DTs by accuracy within each client RF.
 
     Selects top performing trees from each client based on accuracy.
@@ -24,7 +26,12 @@ def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None
 
     for client_trees in client_trees_list:
         ranked = rank_trees_by_metric(
-            client_trees, X_val, y_val, metric='accuracy', classes=classes
+            client_trees,
+            X_val,
+            y_val,
+            metric='accuracy',
+            classes=classes,
+            n_jobs=n_jobs,
         )
         top_trees = [tree for tree, _ in ranked[:n_trees_per_client]]
         selected_trees.extend(top_trees)
@@ -32,7 +39,9 @@ def rf_s_dts_a(client_trees_list, X_val, y_val, n_trees_per_client, classes=None
     return selected_trees
 
 
-def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=None):
+def rf_s_dts_wa(
+    client_trees_list, X_val, y_val, n_trees_per_client, classes=None, n_jobs=None
+):
     """RF_S_DTs_WA: Sort DTs by weighted accuracy within each client RF.
 
     Selects top performing trees from each client based on weighted accuracy.
@@ -51,7 +60,12 @@ def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=Non
 
     for client_trees in client_trees_list:
         ranked = rank_trees_by_metric(
-            client_trees, X_val, y_val, metric='weighted_accuracy', classes=classes
+            client_trees,
+            X_val,
+            y_val,
+            metric='weighted_accuracy',
+            classes=classes,
+            n_jobs=n_jobs,
         )
         top_trees = [tree for tree, _ in ranked[:n_trees_per_client]]
         selected_trees.extend(top_trees)
@@ -59,7 +73,9 @@ def rf_s_dts_wa(client_trees_list, X_val, y_val, n_trees_per_client, classes=Non
     return selected_trees
 
 
-def rf_s_dts_a_all(client_trees_list, X_val, y_val, n_total_trees, classes=None):
+def rf_s_dts_a_all(
+    client_trees_list, X_val, y_val, n_total_trees, classes=None, n_jobs=None
+):
     """RF_S_DTs_A_All: Sort all DTs globally by accuracy.
 
     Collects all trees from all clients, sorts globally by accuracy,
@@ -80,14 +96,16 @@ def rf_s_dts_a_all(client_trees_list, X_val, y_val, n_total_trees, classes=None)
         all_trees.extend(client_trees)
 
     ranked = rank_trees_by_metric(
-        all_trees, X_val, y_val, metric='accuracy', classes=classes
+        all_trees, X_val, y_val, metric='accuracy', classes=classes, n_jobs=n_jobs
     )
     selected_trees = [tree for tree, _ in ranked[:n_total_trees]]
 
     return selected_trees
 
 
-def rf_s_dts_wa_all(client_trees_list, X_val, y_val, n_total_trees, classes=None):
+def rf_s_dts_wa_all(
+    client_trees_list, X_val, y_val, n_total_trees, classes=None, n_jobs=None
+):
     """RF_S_DTs_WA_All: Sort all DTs globally by weighted accuracy.
 
     Collects all trees from all clients, sorts globally by weighted accuracy,
@@ -108,7 +126,12 @@ def rf_s_dts_wa_all(client_trees_list, X_val, y_val, n_total_trees, classes=None
         all_trees.extend(client_trees)
 
     ranked = rank_trees_by_metric(
-        all_trees, X_val, y_val, metric='weighted_accuracy', classes=classes
+        all_trees,
+        X_val,
+        y_val,
+        metric='weighted_accuracy',
+        classes=classes,
+        n_jobs=n_jobs,
     )
     selected_trees = [tree for tree, _ in ranked[:n_total_trees]]
 
@@ -123,6 +146,7 @@ def aggregate_trees(
     n_trees_per_client=None,
     n_total_trees=None,
     classes=None,
+    n_jobs=-1,
 ):
     """Aggregate trees from multiple clients using specified strategy.
 
@@ -138,6 +162,9 @@ def aggregate_trees(
         n_trees_per_client: Trees to select per client (for non-global strategies).
         n_total_trees: Total trees to select (for global strategies).
         classes: Optional class labels.
+        n_jobs: Parallel workers for per-tree validation scoring (``-1`` = all
+            cores; ``1`` = sequential). See
+            :func:`distributed_random_forest.parallelism.resolve_n_jobs`.
 
     Returns:
         list: Selected trees for the global RF.
@@ -157,13 +184,13 @@ def aggregate_trees(
         if n_trees_per_client is None:
             n_trees_per_client = 10
         return strategy_map[strategy](
-            client_trees_list, X_val, y_val, n_trees_per_client, classes
+            client_trees_list, X_val, y_val, n_trees_per_client, classes, n_jobs
         )
     else:
         if n_total_trees is None:
             n_total_trees = 100
         return strategy_map[strategy](
-            client_trees_list, X_val, y_val, n_total_trees, classes
+            client_trees_list, X_val, y_val, n_total_trees, classes, n_jobs
         )
 
 
@@ -174,17 +201,25 @@ class FederatedAggregator:
     into a global Random Forest.
     """
 
-    def __init__(self, strategy='rf_s_dts_a', n_trees_per_client=10, n_total_trees=100):
+    def __init__(
+        self,
+        strategy='rf_s_dts_a',
+        n_trees_per_client=10,
+        n_total_trees=100,
+        n_jobs=-1,
+    ):
         """Initialize aggregator.
 
         Args:
             strategy: Aggregation strategy name.
             n_trees_per_client: Trees to select per client (for non-global strategies).
             n_total_trees: Total trees to select (for global strategies).
+            n_jobs: Parallel tree scoring during aggregation (``-1`` = all cores).
         """
         self.strategy = strategy
         self.n_trees_per_client = n_trees_per_client
         self.n_total_trees = n_total_trees
+        self.n_jobs = n_jobs
         self.global_trees = None
         self.global_rf = None
 
@@ -210,6 +245,7 @@ class FederatedAggregator:
             n_trees_per_client=self.n_trees_per_client,
             n_total_trees=self.n_total_trees,
             classes=classes,
+            n_jobs=self.n_jobs,
         )
 
         return self.global_trees
@@ -225,7 +261,7 @@ class FederatedAggregator:
             RandomForest: Global RF instance.
         """
 
-        self.global_rf = RandomForest(voting=voting)
+        self.global_rf = RandomForest(voting=voting, n_jobs=self.n_jobs)
         self.global_rf.set_trees(self.global_trees, classes)
         return self.global_rf
 

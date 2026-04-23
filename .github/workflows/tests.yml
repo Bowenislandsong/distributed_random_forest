@@ -31,15 +31,15 @@ jobs:
 
     - name: Run unit tests
       run: |
-        pytest tests/test_tree_utils.py tests/test_random_forest.py tests/test_dp_rf.py tests/test_voting.py tests/test_aggregator.py -v --tb=short
+        pytest tests/test_tree_utils.py tests/test_random_forest.py tests/test_dp_rf.py tests/test_voting.py tests/test_aggregator.py tests/test_datasets.py tests/test_examples_run.py tests/test_performance.py tests/test_parallelism.py tests/test_parallel_stress.py -v --tb=short
 
     - name: Run end-to-end tests
       run: |
-        pytest tests/test_e2e.py -v --tb=short
+        pytest tests/test_e2e.py tests/test_e2e_public_dataset.py tests/test_parallel_e2e.py -v --tb=short
 
     - name: Run all tests with coverage
       run: |
-        pytest tests/ -v --cov=models --cov=federation --cov=experiments --cov-report=term-missing --cov-report=xml
+        pytest tests/ -v --cov=distributed_random_forest --cov-report=term-missing --cov-report=xml
 
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4

@@ -1,0 +1,66 @@
+# Distributed Random Forest — documentation site
+# Build: pip install -e ".[docs]" && mkdocs build
+# Preview: mkdocs serve
+
+site_name: Distributed Random Forest
+site_description: >-
+  Federated random forest training, tree aggregation, and optional differential
+  privacy.
+site_url: https://bowenislandsong.github.io/distributed_random_forest/
+repo_url: https://github.com/Bowenislandsong/distributed_random_forest
+repo_name: View on GitHub
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - User guide:
+      - Core concepts: concepts.md
+      - Supported distributed RF patterns: patterns.md
+      - Experiment pipeline: pipeline.md
+      - Getting started: getting-started.md
+      - Code examples: examples.md
+  - Project:
+      - Repository layout: repository.md
+  - License & citation: citing.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/solid/rocket
+      link: https://pypi.org/project/distributed-random-forest/
+      name: PyPI

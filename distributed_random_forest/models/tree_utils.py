@@ -1,7 +1,10 @@
 """Tree utility functions for computing accuracy metrics."""
 
 import numpy as np
+from joblib import Parallel, delayed
 from sklearn.metrics import accuracy_score, f1_score
+
+from distributed_random_forest.parallelism import resolve_n_jobs
 
 
 def _map_tree_predictions(y_pred, tree_classes, target_classes):
@@ -133,8 +136,23 @@ def evaluate_tree(tree, X_val, y_val, classes=None):
     }
 
 
-def rank_trees_by_metric(trees, X_val, y_val, metric='accuracy', classes=None):
+def _score_tree_for_ranking(tree, X_val, y_val, metric, classes):
+    """Module-level to support picklable :class:`joblib.Parallel` workers."""
+    metrics = evaluate_tree(tree, X_val, y_val, classes)
+    return tree, float(metrics[metric])
+
+
+def rank_trees_by_metric(
+    trees,
+    X_val,
+    y_val,
+    metric='accuracy',
+    classes=None,
+    n_jobs=None,
+):
     """Rank trees by a specified metric.
+
+    Scoring is embarrassingly parallel; use ``n_jobs=-1`` to use all CPUs.
 
     Args:
         trees: List of fitted decision tree estimators.
@@ -142,15 +160,24 @@ def rank_trees_by_metric(trees, X_val, y_val, metric='accuracy', classes=None):
         y_val: Validation labels.
         metric: Metric to rank by ('accuracy' or 'weighted_accuracy').
         classes: Optional list of class labels.
+        n_jobs: Same as scikit-learn: ``None``/``0`` = sequential, ``-1`` = all
+            cores, or a positive int (see
+            :func:`distributed_random_forest.parallelism.resolve_n_jobs`).
 
     Returns:
         list: List of (tree, score) tuples sorted by score descending.
     """
-    scored_trees = []
-    for tree in trees:
-        metrics = evaluate_tree(tree, X_val, y_val, classes)
-        score = metrics[metric]
-        scored_trees.append((tree, score))
+    n_workers = resolve_n_jobs(n_jobs)
+    if n_workers <= 1 or len(trees) <= 1:
+        scored_trees = [
+            (tree, float(evaluate_tree(tree, X_val, y_val, classes)[metric]))
+            for tree in trees
+        ]
+    else:
+        scored_trees = Parallel(n_jobs=n_workers)(
+            delayed(_score_tree_for_ranking)(t, X_val, y_val, metric, classes)
+            for t in trees
+        )
 
     scored_trees.sort(key=lambda x: x[1], reverse=True)
     return scored_trees

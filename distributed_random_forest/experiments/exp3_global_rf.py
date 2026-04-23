@@ -30,6 +30,7 @@ def run_exp3_federated_aggregation(
     n_trees_per_client=10,
     n_total_trees=100,
     voting='simple',
+    n_jobs=-1,
     verbose=True,
 ):
     """Run federated aggregation experiment.
@@ -43,6 +44,7 @@ def run_exp3_federated_aggregation(
         n_trees_per_client: Trees to select per client.
         n_total_trees: Total trees for global strategies.
         voting: Voting method for global RF.
+        n_jobs: Parallel tree scoring in aggregation; merged RF prediction.
         verbose: Whether to print progress.
 
     Returns:
@@ -77,9 +79,10 @@ def run_exp3_federated_aggregation(
             n_trees_per_client=n_trees_per_client,
             n_total_trees=n_total_trees,
             classes=classes,
+            n_jobs=n_jobs,
         )
 
-        global_rf = RandomForest(voting=voting)
+        global_rf = RandomForest(voting=voting, n_jobs=n_jobs)
         global_rf.set_trees(selected_trees, classes)
 
         y_pred = global_rf.predict(X_test)

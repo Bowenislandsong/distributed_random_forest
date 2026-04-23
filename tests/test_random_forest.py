@@ -33,6 +33,7 @@ class TestRandomForest:
         assert rf.criterion == 'gini'
         assert rf.voting == 'simple'
         assert rf.max_depth is None
+        assert rf.n_jobs == -1
 
     def test_initialization_custom_params(self):
         """Test RF initializes with custom parameters."""

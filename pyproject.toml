@@ -36,6 +36,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.21.0",
     "scikit-learn>=1.0.0",
+    "joblib>=1.2.0",
     "pandas>=1.3.0",
     "diffprivlib>=0.6.0",
 ]
@@ -45,9 +46,14 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/Bowenislandsong/distributed_random_forest"
+Documentation = "https://bowenislandsong.github.io/distributed_random_forest/"
 Repository = "https://github.com/Bowenislandsong/distributed_random_forest"
 Issues = "https://github.com/Bowenislandsong/distributed_random_forest/issues"
 
@@ -62,3 +68,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "performance: accuracy/latency bounds on public or synthetic data (CI-safe)",
+    "e2e: end-to-end or integration-style path",
+    "parallel_parity: n_jobs=1 vs n_jobs=-1 should match (determinism checks)",
+    "stress: larger client/tree counts; still CI-safe with loose time bounds",
+]

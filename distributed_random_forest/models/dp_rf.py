@@ -28,6 +28,7 @@ class DPRandomForest(RandomForest):
         min_samples_split=2,
         min_samples_leaf=1,
         random_state=None,
+        n_jobs=-1,
         epsilon=1.0,
         dp_mechanism='laplace',
     ):
@@ -41,6 +42,7 @@ class DPRandomForest(RandomForest):
             min_samples_split: Minimum samples to split a node.
             min_samples_leaf: Minimum samples at a leaf.
             random_state: Random seed.
+            n_jobs: Parallelism for per-tree weighting and merged prediction.
             epsilon: Privacy budget (smaller = more private).
             dp_mechanism: DP noise mechanism ('laplace' or 'gaussian').
         """
@@ -52,6 +54,7 @@ class DPRandomForest(RandomForest):
             min_samples_split=min_samples_split,
             min_samples_leaf=min_samples_leaf,
             random_state=random_state,
+            n_jobs=n_jobs,
         )
         self.epsilon = epsilon
         self.dp_mechanism = dp_mechanism

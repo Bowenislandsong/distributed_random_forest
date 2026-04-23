@@ -28,6 +28,7 @@ def run_exp4_dp_federation(
     aggregation_strategy='rf_s_dts_a',
     n_trees_per_client=10,
     n_total_trees=100,
+    n_jobs=-1,
     validation_split=0.2,
     random_state=42,
     verbose=True,
@@ -48,6 +49,8 @@ def run_exp4_dp_federation(
         aggregation_strategy: Strategy from EXP 3.
         n_trees_per_client: Trees per client for aggregation.
         n_total_trees: Total trees for global strategies.
+        n_jobs: Parallel tree scoring and merged RF (same as
+            :func:`distributed_random_forest.federation.aggregator.aggregate_trees`).
         validation_split: Fraction for validation if partitions not given.
         random_state: Random seed.
         verbose: Whether to print progress.
@@ -120,9 +123,13 @@ def run_exp4_dp_federation(
             n_trees_per_client=n_trees_per_client,
             n_total_trees=n_total_trees,
             classes=classes,
+            n_jobs=n_jobs,
         )
 
-        global_rf = RandomForest(voting=rf_params.get('voting', 'simple'))
+        global_rf = RandomForest(
+            voting=rf_params.get('voting', 'simple'),
+            n_jobs=n_jobs,
+        )
         global_rf.set_trees(selected_trees, classes)
 
         y_pred = global_rf.predict(X_test)
