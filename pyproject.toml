@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "distributed-random-forest"
-version = "0.3.1"
+version = "0.4.0"
 description = "Enterprise-ready distributed and federated Random Forests with orchestration, strategy search, and optional differential privacy"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -75,7 +75,7 @@ ORCID = "https://orcid.org/0000-0002-5071-3880"
 Repository = "https://github.com/Bowenislandsong/distributed_random_forest"
 Issues = "https://github.com/Bowenislandsong/distributed_random_forest/issues"
 Documentation = "https://bowenislandsong.github.io/distributed_random_forest/"
-Changelog = "https://github.com/Bowenislandsong/distributed_random_forest/releases"
+Changelog = "https://github.com/Bowenislandsong/distributed_random_forest/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["distributed_random_forest*"]

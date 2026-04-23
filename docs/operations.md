@@ -24,12 +24,13 @@ to `main` (and on manual dispatch).
 
 ## PyPI Publishing
 
-The publish workflow is configured for trusted publishing via GitHub Actions.
-To activate it end-to-end:
+The **Publish** workflow (`.github/workflows/publish.yml`) runs when a **GitHub Release is published**. It builds an sdist and wheel, then uploads to PyPI using the repository secret **`PYPI_ALL`** (a [PyPI API token](https://pypi.org/manage/account/token/); the workflow uses the username `__token__`).
 
-1. Create the PyPI project or reserve the name.
-2. Add GitHub as a trusted publisher for this repository.
-3. Cut a GitHub release.
+1. In the GitHub repository: **Settings → Secrets and variables → Actions**, add **`PYPI_ALL`** with the token value (`pypi-…`).
+2. On PyPI, ensure the `distributed-random-forest` project exists and the token is scoped to that project (or the whole account, if you use a user-wide token with care).
+3. Cut a [GitHub release](https://github.com/Bowenislandsong/distributed_random_forest/releases) (tag like `v0.4.0`); the workflow uploads the artifacts built from that ref.
+
+The canonical list of what changed in each version is in [`CHANGELOG.md`](https://github.com/Bowenislandsong/distributed_random_forest/blob/main/CHANGELOG.md) and on the docs site under **Changelog**.
 
 ## Recommended Repository Settings
 

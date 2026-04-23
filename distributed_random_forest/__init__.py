@@ -74,7 +74,7 @@ try:
 
     __version__ = version("distributed-random-forest")
 except Exception:  # pragma: no cover
-    __version__ = "0.3.1"
+    __version__ = "0.4.0"
 
 __all__ = [
     "resolve_n_jobs",
